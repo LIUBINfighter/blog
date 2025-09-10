@@ -69,17 +69,26 @@ const isActive = (path: string) => {
           ]}
         >
           <li class="col-span-2">
-            <a href={`${import.meta.env.BASE_URL ?? "/"}posts`} class:list={{ "active-nav": isActive("/posts") }}>
+            <a
+              href={`${import.meta.env.BASE_URL ?? "/"}posts`}
+              class:list={{ "active-nav": isActive("/posts") }}
+            >
               Posts
             </a>
           </li>
           <li class="col-span-2">
-            <a href={`${import.meta.env.BASE_URL ?? "/"}tags`} class:list={{ "active-nav": isActive("/tags") }}>
+            <a
+              href={`${import.meta.env.BASE_URL ?? "/"}tags`}
+              class:list={{ "active-nav": isActive("/tags") }}
+            >
               Tags
             </a>
           </li>
           <li class="col-span-2">
-            <a href={`${import.meta.env.BASE_URL ?? "/"}about`} class:list={{ "active-nav": isActive("/about") }}>
+            <a
+              href={`${import.meta.env.BASE_URL ?? "/"}about`}
+              class:list={{ "active-nav": isActive("/about") }}
+            >
               About
             </a>
           </li>

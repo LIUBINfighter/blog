@@ -60,8 +60,12 @@ const structuredData = {
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
-  {/** Use BASE-aware paths for public assets so they work on subpaths */}
-  <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL ?? "/"}favicon.svg`} />
+    {/** Use BASE-aware paths for public assets so they work on subpaths */}
+    <link
+      rel="icon"
+      type="image/svg+xml"
+      href={`${import.meta.env.BASE_URL ?? "/"}favicon.svg`}
+    />
     <link rel="canonical" href={canonicalURL} />
     <meta name="generator" content={Astro.generator} />
 
@@ -70,7 +74,10 @@ const structuredData = {
     <meta name="title" content={title} />
     <meta name="description" content={description} />
     <meta name="author" content={author} />
-  <link rel="sitemap" href={`${import.meta.env.BASE_URL ?? "/"}sitemap-index.xml`} />
+    <link
+      rel="sitemap"
+      href={`${import.meta.env.BASE_URL ?? "/"}sitemap-index.xml`}
+    />
 
     <!-- Open Graph / Facebook -->
     <meta property="og:title" content={title} />
@@ -135,7 +142,8 @@ const structuredData = {
 
     <ClientRouter />
 
-  <script is:inline src={`${import.meta.env.BASE_URL ?? "/"}toggle-theme.js`}></script>
+    <script is:inline src={`${import.meta.env.BASE_URL ?? "/"}toggle-theme.js`}
+    ></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/npm/katex@0.16.4/dist/katex.min.css"
