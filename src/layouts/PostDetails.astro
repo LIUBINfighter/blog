@@ -48,7 +48,12 @@ if (typeof initOgImage === "string") {
 
 // Use dynamic OG image if enabled and no remote|local ogImage
 if (!ogImageUrl && SITE.dynamicOgImage) {
-  ogImageUrl = `${getPath(post.id, post.filePath)}/index.png`;
+  ogImageUrl = `${import.meta.env.BASE_URL ?? "/"}${getPath(
+    post.id,
+    post.filePath,
+    true,
+    post.data?.slug
+  ).replace(/^\//, "")}/index.png`;
 }
 
 // Resolve OG image URL (or fallback to SITE.ogImage / default `og.png`)
@@ -136,7 +141,12 @@ const nextPost =
       {
         prevPost && (
           <a
-            href={getPath(prevPost.id, prevPost.filePath)}
+            href={`${import.meta.env.BASE_URL ?? "/"}${getPath(
+              prevPost.id,
+              prevPost.filePath,
+              true,
+              prevPost.id?.split("/").slice(-1)[0]
+            ).replace(/^\//, "")}`}
             class="flex w-full gap-1 hover:opacity-75"
           >
             <IconChevronLeft class="inline-block flex-none rtl:rotate-180" />
@@ -150,7 +160,12 @@ const nextPost =
       {
         nextPost && (
           <a
-            href={getPath(nextPost.id, nextPost.filePath)}
+            href={`${import.meta.env.BASE_URL ?? "/"}${getPath(
+              nextPost.id,
+              nextPost.filePath,
+              true,
+              nextPost.id?.split("/").slice(-1)[0]
+            ).replace(/^\//, "")}`}
             class="flex w-full justify-end gap-1 text-end hover:opacity-75 sm:col-start-2"
           >
             <div>

@@ -20,7 +20,12 @@ const headerProps = {
 
 <li class="my-6">
   <a
-    href={getPath(id, filePath)}
+    href={`${import.meta.env.BASE_URL ?? "/"}${getPath(
+      id,
+      filePath,
+      true,
+      (data as { slug?: string })?.slug
+    ).replace(/^\//, "")}`}
     class="inline-block text-lg font-medium text-accent decoration-dashed underline-offset-4 focus-visible:no-underline focus-visible:underline-offset-0"
   >
     {

@@ -22,7 +22,7 @@ We're excited to announce the release of AstroPaper v3, packed with new features
 
 <video autoplay loop="loop" muted="muted" plays-inline="true">
   <source src="https://github.com/satnaing/astro-paper/assets/53733092/18fdb604-1ca3-41a0-8372-1367759091ff" type="video/mp4">
-  <!-- <source src="/assets/docs/astro-paper-v3-view-transitions-demo.mp4" type="video/mp4"> -->
+  <!-- <source src="/blog/assets/docs/astro-paper-v3-view-transitions-demo.mp4" type="video/mp4"> -->
 </video>
 
 AstroPaper now fully supports [Astro v3](https://astro.build/blog/astro-3/), offering improved performance and rendering speed.

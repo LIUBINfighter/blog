@@ -8,6 +8,8 @@ const blog = defineCollection({
   loader: glob({ pattern: "**/[^_]*.{md,mdx}", base: `./${BLOG_PATH}` }),
   schema: ({ image }) =>
     z.object({
+      // Optional slug field exposed in frontmatter to override generated slug
+      slug: z.string().optional(),
       author: z.string().default(SITE.author),
       pubDatetime: z.date(),
       modDatetime: z.date().optional().nullable(),

@@ -11,7 +11,8 @@ import { slugifyStr } from "./slugify";
 export function getPath(
   id: string,
   filePath: string | undefined,
-  includeBase = true
+  includeBase = true,
+  slugOverride?: unknown
 ) {
   const pathSegments = filePath
     ?.replace(BLOG_PATH, "")
@@ -21,11 +22,15 @@ export function getPath(
     .slice(0, -1) // remove the last segment_ file name_ since it's unnecessary
     .map(segment => slugifyStr(segment)); // slugify each segment path
 
+  // Return path relative to site root. Do NOT include deployment base here.
   const basePath = includeBase ? "/posts" : "";
 
-  // Making sure `id` does not contain the directory
+  // Making sure `id` does not contain the directory and get string slug
   const blogId = id.split("/");
-  const slug = blogId.length > 0 ? blogId.slice(-1) : blogId;
+  const defaultSlug = blogId.length > 0 ? blogId[blogId.length - 1] : id;
+  const slug =
+    (typeof slugOverride === "string" ? slugOverride : undefined) ??
+    defaultSlug;
 
   // If not inside the sub-dir, simply return the file path
   if (!pathSegments || pathSegments.length < 1) {

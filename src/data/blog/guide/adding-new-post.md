@@ -224,11 +224,11 @@ For these images, you should use an absolute path; and these images can be displ
 Example: Assume `example.jpg` is located at `/public/assets/images/example.jpg`.
 
 ```md
-![something](/assets/images/example.jpg)
+![something](/blog/assets/images/example.jpg)
 
 <!-- OR -->
 
-<img src="/assets/images/example.jpg" alt="something">
+<img src="/blog/assets/images/example.jpg" alt="something">
 ```
 
 ## Bonus

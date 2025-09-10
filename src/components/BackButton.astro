@@ -26,9 +26,18 @@ import { SITE } from "@/config";
       document.querySelector("#back-button");
 
     const backUrl = sessionStorage.getItem("backUrl");
+    const BASE = import.meta.env.BASE_URL ?? "/";
 
-    if (backUrl && backButton) {
-      backButton.href = backUrl;
+    if (backButton) {
+      if (backUrl) {
+        // If stored backUrl already starts with BASE, use it; otherwise prefix BASE
+        backButton.href = backUrl.startsWith(BASE)
+          ? backUrl
+          : `${BASE}${backUrl.replace(/^\//, "")}`;
+      } else {
+        // Fallback to base
+        backButton.href = BASE;
+      }
     }
   }
 
