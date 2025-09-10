@@ -5,19 +5,19 @@
 
 :root,
 html[data-theme="light"] {
-  --background: #fdfdfd;
-  --foreground: #282728;
-  --accent: #006cac;
-  --muted: #e6e6e6;
-  --border: #ece9e9;
+  --background: #f3f6f6; /* 干净的雾白色 */
+  --foreground: #335252; /* 融合了绿和蓝的深色，非常稳重 */
+  --accent: #6fa774; /* 草地的绿色，充满活力 */
+  --muted: #dde6e2; /* 带有极淡绿色的灰色 */
+  --border: #cbd7d2; /* 边框色 */
 }
 
 html[data-theme="dark"] {
-  --background: #212737;
-  --foreground: #eaedf3;
-  --accent: #ff6b01;
-  --muted: #343f60;
-  --border: #ab4b08;
+  --background: #1b3138; /* 深邃的、近乎黑色的山体 */
+  --foreground: #eaf3f1; /* 浅色的雾气，用于文字 */
+  --accent: #d7b8cc; /* 天边的柔和粉紫色，作为点缀，非常别致 */
+  --muted: #4c6973; /* 中等色调的蓝色山体 */
+  --border: #5a7b85; /* 边框色 */
 }
 
 @theme inline {
