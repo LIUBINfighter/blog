@@ -92,6 +92,19 @@ const isActive = (path: string) => {
               About
             </a>
           </li>
+          <li class="col-span-1 flex items-center justify-center">
+            <LinkButton
+              href={`${import.meta.env.BASE_URL ?? "/"}garden`}
+              class:list={[
+                "focus-outline flex p-3 sm:p-1",
+                { "[&>svg]:stroke-accent": isActive("/garden") },
+              ]}
+              ariaLabel="garden"
+              title="Garden"
+            >
+              <span>Garden</span>
+            </LinkButton>
+          </li>
           {
             SITE.showArchives && (
               <li class="col-span-2">
@@ -112,33 +125,24 @@ const isActive = (path: string) => {
               </li>
             )
           }
-          <li class="col-span-1 flex items-center justify-center">
-            <LinkButton
-              href={`${import.meta.env.BASE_URL ?? "/"}garden`}
-              class:list={[
-                "focus-outline flex p-3 sm:p-1",
-                { "[&>svg]:stroke-accent": isActive("/garden") },
-              ]}
-              ariaLabel="garden"
-              title="Garden"
-            >
-              <span>Garden</span>
-            </LinkButton>
-          </li>
-          <li class="col-span-1 flex items-center justify-center">
-            <LinkButton
-              href={`${import.meta.env.BASE_URL ?? "/"}search`}
-              class:list={[
-                "focus-outline flex p-3 sm:p-1",
-                { "[&>svg]:stroke-accent": isActive("/search") },
-              ]}
-              ariaLabel="search"
-              title="Search"
-            >
-              <IconSearch />
-              <span class="sr-only">Search</span>
-            </LinkButton>
-          </li>
+          {
+            false && (
+              <li class="col-span-1 flex items-center justify-center">
+                <LinkButton
+                  href={`${import.meta.env.BASE_URL ?? "/"}search`}
+                  class:list={[
+                    "focus-outline flex p-3 sm:p-1",
+                    { "[&>svg]:stroke-accent": isActive("/search") },
+                  ]}
+                  ariaLabel="search"
+                  title="Search"
+                >
+                  <IconSearch />
+                  <span class="sr-only">Search</span>
+                </LinkButton>
+              </li>
+            )
+          }
           {
             SITE.lightAndDarkMode && (
               <li class="col-span-1 flex items-center justify-center">
