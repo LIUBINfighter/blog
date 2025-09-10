@@ -23,7 +23,11 @@ export default defineConfig({
     }),
     mdx({
       // enable math support in MDX files
-      remarkPlugins: [remarkMath, remarkToc, [remarkCollapse, { test: "Table of contents" }]],
+      remarkPlugins: [
+        remarkMath,
+        remarkToc,
+        [remarkCollapse, { test: "Table of contents" }],
+      ],
       rehypePlugins: [rehypeKatex],
     }),
   ],
