@@ -4,32 +4,36 @@ type CounterProps = {
   start?: number;
 };
 
-export default function Counter({ start = 0 }: CounterProps) {
+const Counter: React.FC<CounterProps> = ({ start = 0 }) => {
   const [count, setCount] = useState<number>(start);
 
   return (
-    <div className="p-4 border rounded bg-card">
+    <div className="bg-card rounded border p-4">
       <p className="mb-2">Count: {count}</p>
       <div className="flex gap-2">
         <button
-          className="px-3 py-1 rounded bg-accent text-white"
-          onClick={() => setCount((c) => c + 1)}
+          className="rounded bg-accent px-3 py-1 text-white"
+          onClick={() => setCount(c => c + 1)}
+          aria-label="increment"
         >
           +1
         </button>
         <button
-          className="px-3 py-1 rounded border"
-          onClick={() => setCount((c) => c - 1)}
+          className="rounded border px-3 py-1"
+          onClick={() => setCount(c => c - 1)}
+          aria-label="decrement"
         >
           -1
         </button>
         <button
-          className="px-3 py-1 rounded border"
+          className="rounded border px-3 py-1"
           onClick={() => setCount(start)}
+          aria-label="reset"
         >
           reset
         </button>
       </div>
     </div>
   );
-}
+};
+export default Counter;

@@ -32,8 +32,8 @@ export default defineConfig({
       ],
       rehypePlugins: [rehypeKatex],
     }),
-  // Enable React support for client-side islands
-  react(),
+    // Enable React support for client-side islands
+    react(),
   ],
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],

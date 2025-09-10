@@ -30,27 +30,30 @@ const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
 
     onIdle(async () => {
       /* eslint-disable no-console */
-      console.log('开始尝试导入 PagefindUI...');
-      console.log('当前环境:', import.meta.env.DEV ? '开发模式' : '生产模式');
-      
+      console.log("开始尝试导入 PagefindUI...");
+      console.log("当前环境:", import.meta.env.DEV ? "开发模式" : "生产模式");
+
       let PagefindUI;
       try {
         // @ts-expect-error — Missing types for @pagefind/default-ui package.
         const module = await import("@pagefind/default-ui");
         PagefindUI = module.PagefindUI;
-        console.log('PagefindUI 导入成功:', PagefindUI ? '定义了' : 'undefined');
+        console.log(
+          "PagefindUI 导入成功:",
+          PagefindUI ? "定义了" : "undefined"
+        );
         if (PagefindUI) {
-          console.log('PagefindUI 构造函数类型:', typeof PagefindUI);
+          console.log("PagefindUI 构造函数类型:", typeof PagefindUI);
         }
       } catch (error: unknown) {
-        console.error('PagefindUI 导入失败:', error);
-        let errorMessage = '未知错误';
-        
-        if (error && typeof error === 'object' && 'message' in error) {
+        console.error("PagefindUI 导入失败:", error);
+        let errorMessage = "未知错误";
+
+        if (error && typeof error === "object" && "message" in error) {
           errorMessage = (error as Error).message || errorMessage;
         }
-        
-        console.error('错误详情:', errorMessage);
+
+        console.error("错误详情:", errorMessage);
         // 在导入失败时显示错误信息
         pageFindSearch.innerHTML = `
           <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
@@ -63,7 +66,7 @@ const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
 
       if (!PagefindUI) {
         /* eslint-disable no-console */
-        console.error('PagefindUI 未定义，无法初始化搜索界面');
+        console.error("PagefindUI 未定义，无法初始化搜索界面");
         pageFindSearch.innerHTML = `
           <div class="bg-yellow-100 border border-yellow-400 text-yellow-700 px-4 py-3 rounded">
             <strong>警告:</strong> PagefindUI 未正确加载，请检查依赖和构建过程。
@@ -76,7 +79,7 @@ const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
       // Display warning inn dev mode
       if (import.meta.env.DEV) {
         /* eslint-disable no-console */
-        console.warn('开发模式警告: 需要运行 pnpm build 才能看到搜索结果');
+        console.warn("开发模式警告: 需要运行 pnpm build 才能看到搜索结果");
         /* eslint-enable no-console */
         pageFindSearch.innerHTML = `
             <div class="bg-muted/75 rounded p-4 space-y-4 mb-4">
@@ -87,11 +90,11 @@ const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
       }
 
       /* eslint-disable no-console */
-      console.log('开始初始化 PagefindUI 实例...');
+      console.log("开始初始化 PagefindUI 实例...");
       let search;
       try {
         // Init pagefind ui
-        console.log('配置 PagefindUI 路径: /pagefind');
+        console.log("配置 PagefindUI 路径: /pagefind");
         search = new PagefindUI({
           indexPath: "/pagefind",
           element: "#pagefind-search",
@@ -102,20 +105,27 @@ const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
             history.replaceState(history.state, "", "?" + params.toString()); // Push the new URL without reloading
 
             const backUrl = pageFindSearch?.dataset?.backurl;
-            sessionStorage.setItem("backUrl", backUrl + "?" + params.toString());
+            sessionStorage.setItem(
+              "backUrl",
+              backUrl + "?" + params.toString()
+            );
 
             return term;
           },
         });
-        console.log('PagefindUI 实例化成功:', search ? '成功' : '失败');
-        console.log('PagefindUI 配置路径:', search ? '默认路径' : '配置失败');
+        console.log("PagefindUI 实例化成功:", search ? "成功" : "失败");
+        console.log("PagefindUI 配置路径:", search ? "默认路径" : "配置失败");
       } catch (initError: unknown) {
-        console.error('PagefindUI 初始化失败:', initError);
-        let initErrorMessage = '未知初始化错误';
-        if (initError && typeof initError === 'object' && 'message' in initError) {
+        console.error("PagefindUI 初始化失败:", initError);
+        let initErrorMessage = "未知初始化错误";
+        if (
+          initError &&
+          typeof initError === "object" &&
+          "message" in initError
+        ) {
           initErrorMessage = (initError as Error).message || initErrorMessage;
         }
-        console.error('初始化错误详情:', initErrorMessage);
+        console.error("初始化错误详情:", initErrorMessage);
         pageFindSearch.innerHTML = `
           <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded">
             <strong>搜索界面初始化失败!</strong> ${initErrorMessage}
