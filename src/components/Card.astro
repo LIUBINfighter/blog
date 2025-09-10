@@ -12,6 +12,32 @@ const { variant = "h2", data, id, filePath } = Astro.props;
 
 const { title, description, pubDatetime, modDatetime, timezone } = data;
 
+// Resolve a thumbnail image for the card: prefer cover -> ogImage
+type ImageLike = { src?: string };
+let thumbUrl: string | undefined;
+const initOg = (data as { ogImage?: unknown }).ogImage;
+const initCover = (data as { cover?: unknown }).cover;
+
+if (initCover) {
+  if (typeof initCover === "string") thumbUrl = initCover;
+  else if (
+    typeof initCover === "object" &&
+    "src" in initCover &&
+    typeof (initCover as ImageLike).src === "string"
+  ) {
+    thumbUrl = (initCover as ImageLike).src as string;
+  }
+} else if (initOg) {
+  if (typeof initOg === "string") thumbUrl = initOg;
+  else if (
+    typeof initOg === "object" &&
+    "src" in initOg &&
+    typeof (initOg as ImageLike).src === "string"
+  ) {
+    thumbUrl = (initOg as ImageLike).src as string;
+  }
+}
+
 const headerProps = {
   style: { viewTransitionName: slugifyStr(title) },
   class: "text-lg font-medium decoration-dashed hover:underline",
@@ -19,6 +45,26 @@ const headerProps = {
 ---
 
 <li class="my-6">
+  {
+    thumbUrl && (
+      <a
+        href={`${import.meta.env.BASE_URL ?? "/"}${getPath(
+          id,
+          filePath,
+          true,
+          (data as { slug?: string })?.slug
+        ).replace(/^\//, "")}`}
+        class="mb-2 block overflow-hidden rounded-lg"
+      >
+        <img
+          src={thumbUrl}
+          alt={`${title} - thumbnail`}
+          class="h-40 w-full object-cover"
+          loading="lazy"
+        />
+      </a>
+    )
+  }
   <a
     href={`${import.meta.env.BASE_URL ?? "/"}${getPath(
       id,

@@ -61,6 +61,13 @@ const ogImage = ogImageUrl
   ? new URL(ogImageUrl, Astro.url.origin).href
   : undefined;
 
+// Prefer explicit `cover` frontmatter for page hero; otherwise fall back to ogImageUrl
+const coverUrl = post.data.cover
+  ? typeof post.data.cover === "string"
+    ? post.data.cover
+    : post.data.cover.src
+  : ogImageUrl;
+
 const layoutProps = {
   title: `${title} | ${SITE.title}`,
   author,
@@ -98,6 +105,19 @@ const nextPost =
     ]}
     data-pagefind-body
   >
+    {
+      coverUrl && (
+        <figure class="-mx-4 mb-6 sm:-mx-8">
+          <img
+            src={coverUrl}
+            alt={`${title} - cover`}
+            loading="lazy"
+            class="h-[220px] w-full rounded-lg object-cover shadow-sm sm:h-[420px]"
+          />
+        </figure>
+      )
+    }
+
     <h1
       transition:name={slugifyStr(title)}
       class="inline-block text-2xl font-bold text-accent sm:text-3xl"
