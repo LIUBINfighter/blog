@@ -4,6 +4,7 @@ import Layout from "@/layouts/Layout.astro";
 import Header from "@/components/Header.astro";
 import Footer from "@/components/Footer.astro";
 import { SITE } from "@/config";
+import Counter from "@/components/react/Counter";
 
 const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
 ---
@@ -23,6 +24,11 @@ const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
       </p>
 
       <p>TODO: add garden entries, filters, or import from a collection.</p>
+
+      <!-- React counter demo -->
+      <div class="mt-6">
+        <Counter client:visible start={5} />
+      </div>
     </div>
   </Main>
   <Footer />

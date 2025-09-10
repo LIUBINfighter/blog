@@ -1,5 +1,6 @@
 import { defineConfig, envField } from "astro/config";
 import tailwindcss from "@tailwindcss/vite";
+import react from "@astrojs/react";
 import sitemap from "@astrojs/sitemap";
 import mdx from "@astrojs/mdx";
 import remarkMath from "remark-math";
@@ -31,6 +32,8 @@ export default defineConfig({
       ],
       rehypePlugins: [rehypeKatex],
     }),
+  // Enable React support for client-side islands
+  react(),
   ],
   markdown: {
     remarkPlugins: [remarkToc, [remarkCollapse, { test: "Table of contents" }]],
