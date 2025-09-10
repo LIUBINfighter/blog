@@ -1,0 +1,29 @@
+---
+import Main from "@/layouts/Main.astro";
+import Layout from "@/layouts/Layout.astro";
+import Header from "@/components/Header.astro";
+import Footer from "@/components/Footer.astro";
+import { SITE } from "@/config";
+
+const backUrl = SITE.showBackButton ? `${Astro.url.pathname}` : "/";
+---
+
+<Layout title={`Garden | ${SITE.title}`}>
+  <Header />
+  <Main
+    pageTitle="Garden"
+    pageDesc="A personal garden page for notes and links."
+  >
+    <div class="prose max-w-none">
+      <h2>Garden</h2>
+      <p>
+        This is a placeholder for the Garden page. You can use this page to
+        collect short notes, links, or anything you want to surface
+        independently from the main posts listing.
+      </p>
+
+      <p>TODO: add garden entries, filters, or import from a collection.</p>
+    </div>
+  </Main>
+  <Footer />
+</Layout>
