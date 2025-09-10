@@ -7,7 +7,7 @@ export const SITE = {
   ogImage: "astropaper-og.jpg", // Open Graph 图片
   lightAndDarkMode: true,
   postPerIndex: 4, // 首页显示的文章数量
-  postPerPage: 4, // 每页显示的文章数量
+  postPerPage: 8, // 每页显示的文章数量
   scheduledPostMargin: 15 * 60 * 1000, // 15 minutes
   showArchives: true,
   showBackButton: true, // show back button in post detail
