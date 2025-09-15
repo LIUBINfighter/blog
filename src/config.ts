@@ -1,8 +1,8 @@
 export const SITE = {
   website: "https://liubinfighter.github.io/blog/", // 你的部署域名
   author: "Jay Bridge", // 你的名字
-  profile: "https://github.com/liubinfighter", // 你的个人资料链接
-  desc: "Jay Bridge的个人博客 - 分享技术见解、生活感悟和创意想法", // 站点描述
+  profile: "https://github.com/LIUBINfighter", // 你的个人资料链接
+  desc: "Jay Bridge's Blog", // 站点描述
   title: "Jay Bridge's Blog", // 站点标题
   ogImage: "astropaper-og.jpg", // Open Graph 图片
   lightAndDarkMode: true,
