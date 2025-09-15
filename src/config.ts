@@ -16,7 +16,7 @@ export const SITE = {
     text: "编辑页面",
     url: "https://github.com/liubinfighter/blog/edit/main/", // 你的GitHub仓库编辑链接
   },
-  dynamicOgImage: true,
+  dynamicOgImage: false,
   dir: "ltr", // "rtl" | "auto"
   lang: "zh-cn", // html lang code. 设置为中文
   timezone: "Asia/Shanghai", // 设置为上海时区

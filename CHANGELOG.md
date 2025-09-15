@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## v5.5.1 (2025-09-15)
+
+### Fix
+
+- Disable automatic OG image generation; only use explicit `ogImage` or `cover` from frontmatter
+- Remove dynamic OG fallback in PostDetails layout to prevent automatic generation
+- Set `dynamicOgImage: false` in site config to disable feature
+
 ## v5.5.0 (2025-07-12)
 
 ### Feat

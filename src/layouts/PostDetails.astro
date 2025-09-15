@@ -46,16 +46,6 @@ if (typeof initOgImage === "string") {
   ogImageUrl = initOgImage.src; // Local asset
 }
 
-// Use dynamic OG image if enabled and no remote|local ogImage
-if (!ogImageUrl && SITE.dynamicOgImage) {
-  ogImageUrl = `${import.meta.env.BASE_URL ?? "/"}${getPath(
-    post.id,
-    post.filePath,
-    true,
-    post.data?.slug
-  ).replace(/^\//, "")}/index.png`;
-}
-
 // Resolve OG image URL (or fallback to SITE.ogImage / default `og.png`)
 const ogImage = ogImageUrl
   ? new URL(ogImageUrl, Astro.url.origin).href
