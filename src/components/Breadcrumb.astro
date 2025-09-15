@@ -11,7 +11,11 @@ const pathSegments = rawPath.split("/").filter(Boolean);
 const baseSegments = baseUrl === "/" ? [] : baseUrl.split("/").filter(Boolean);
 
 let breadcrumbList = pathSegments;
-if (baseSegments.length && pathSegments.slice(0, baseSegments.length).join("/") === baseSegments.join("/")) {
+if (
+  baseSegments.length &&
+  pathSegments.slice(0, baseSegments.length).join("/") ===
+    baseSegments.join("/")
+) {
   breadcrumbList = pathSegments.slice(baseSegments.length);
 }
 
