@@ -9,7 +9,7 @@ Stoic Digital Craftsman (Guitarist / Developer / Designer)
 
 Building creative tools like [Tab Flow for Obsidian](https://github.com/LIUBINfighter/Obsidian-Tab-Flow). Exploring AI, music, and the art of productive leisure (Otium).
 
-<img src="./icon.jpg" alt="Personal Icon" width="200">
+<img src="/blog/icon.jpg" alt="Personal Icon" width="200">
 
 ## Here's the story
 
