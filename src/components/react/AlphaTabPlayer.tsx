@@ -567,12 +567,39 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
   const handleTrackClick = useCallback((track: AlphaTabTrack) => {
     const api = apiRef.current;
     if (!api) return;
-    const availableTracks = Array.isArray(api.tracks) ? api.tracks : [];
-    const resolvedTrack = availableTracks.find(t => t.index === track.index) ?? track;
-    if (!api.renderTracks) return;
+    const renderTracks = typeof api.renderTracks === "function" ? api.renderTracks.bind(api) : null;
+    if (!renderTracks) return;
 
-    api.renderTracks([resolvedTrack]);
-    setIsTrackDialogOpen(false);
+    setActiveTracks(prev => {
+      const isActive = prev.has(track.index);
+      if (isActive && prev.size <= 1) {
+        return prev;
+      }
+
+      const next = new Set(prev);
+      if (isActive) {
+        next.delete(track.index);
+      } else {
+        next.add(track.index);
+      }
+
+      const availableTracks = Array.isArray(api.tracks) ? api.tracks : [];
+      const resolvedTracks = Array.from(next)
+        .map(index => {
+          return (
+            availableTracks.find(t => t.index === index) ??
+            scoreRef.current?.tracks?.find(t => t.index === index) ??
+            null
+          );
+        })
+        .filter((item): item is AlphaTabTrack => Boolean(item));
+
+      if (resolvedTracks.length > 0) {
+        renderTracks(resolvedTracks);
+      }
+
+      return next;
+    });
   }, []);
 
   const handlePlayPause = useCallback(() => {
