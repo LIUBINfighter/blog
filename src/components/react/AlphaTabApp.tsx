@@ -19,7 +19,10 @@ const DEFAULT_LABEL = "Canon in D (demo)";
 const ensureThemeSync = (isDark: boolean) => {
   if (typeof document === "undefined") return;
   document.documentElement.classList.toggle("dark", isDark);
-  document.documentElement.setAttribute("data-theme", isDark ? "dark" : "light");
+  document.documentElement.setAttribute(
+    "data-theme",
+    isDark ? "dark" : "light"
+  );
   localStorage.setItem("theme", isDark ? "dark" : "light");
 };
 
@@ -52,7 +55,9 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
   }, [initialSource]);
 
   const [source, setSource] = useState<AlphaTabSource>(deriveInitialSource);
-  const [sourceLabel, setSourceLabel] = useState<string>(initialSource?.label ?? DEFAULT_LABEL);
+  const [sourceLabel, setSourceLabel] = useState<string>(
+    initialSource?.label ?? DEFAULT_LABEL
+  );
   const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
 
   useEffect(() => {
@@ -76,7 +81,8 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
     if (typeof window === "undefined") return;
 
     window.toggleTheme = () => {
-      const themeButton = document.querySelector<HTMLButtonElement>("#theme-btn");
+      const themeButton =
+        document.querySelector<HTMLButtonElement>("#theme-btn");
       if (themeButton) {
         themeButton.click();
         return;
@@ -112,19 +118,24 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
     return () => observer.disconnect();
   }, []);
 
-  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-    setSource({ type: "file", value: file });
-    setSourceLabel(file.name);
-  }, []);
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      setSource({ type: "file", value: file });
+      setSourceLabel(file.name);
+    },
+    []
+  );
 
   const displayName = useMemo(() => {
     if (sourceLabel) return sourceLabel;
     if (source.type === "url") {
       try {
         const url = new URL(source.value);
-        return decodeURIComponent(url.pathname.split("/").pop() || DEFAULT_LABEL);
+        return decodeURIComponent(
+          url.pathname.split("/").pop() || DEFAULT_LABEL
+        );
       } catch {
         return source.value;
       }
@@ -159,6 +170,10 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
           --at-badge-bg: var(--badge-bg);
           --at-badge-text: var(--badge-text);
           --at-accent: var(--accent-strong);
+          --at-cursor-beat-width: 20vh;
+          /* dedicated select capsule variables (light) */
+          --at-select-surface: var(--surface-strong);
+          --at-select-text: var(--control-text);
         }
         html.dark, [data-theme='dark'] {
           --at-panel-bg: color-mix(in srgb, var(--surface) 94%, transparent);
@@ -181,17 +196,25 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
           --at-badge-bg: var(--badge-bg);
           --at-badge-text: var(--badge-text);
           --at-accent: var(--accent-strong);
+          --at-cursor-beat-width: 20vh;
+          /* dedicated select capsule variables (dark) */
+          --at-select-surface: var(--surface);
+          --at-select-text: var(--control-text);
         }
       `}</style>
 
       <header className="rounded-[2.5rem] border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)]/95 px-8 py-7 shadow-[0_28px_70px_-45px_color-mix(in_srgb,var(--border)_85%,transparent)] backdrop-blur-xl transition-colors">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
           <div className="space-y-3">
-            <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--at-text-tertiary)]">
+            <p className="text-xs font-semibold tracking-[0.3em] text-[color:var(--at-text-tertiary)] uppercase">
               alphaTab Toolkit
             </p>
-            <h2 className="text-2xl font-bold text-[color:var(--at-text-primary)]">{heading}</h2>
-            <p className="text-sm text-[color:var(--at-text-secondary)]">{description}</p>
+            <h2 className="text-2xl font-bold text-[color:var(--at-text-primary)]">
+              {heading}
+            </h2>
+            <p className="text-sm text-[color:var(--at-text-secondary)]">
+              {description}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {allowUpload && (
@@ -213,17 +236,27 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--at-panel-subtle-bg)] text-[color:var(--at-text-primary)] transition hover:opacity-90"
               aria-label="Toggle theme"
             >
-              {isDarkMode ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+              {isDarkMode ? (
+                <Sun className="h-5 w-5" />
+              ) : (
+                <Moon className="h-5 w-5" />
+              )}
             </button>
           </div>
         </div>
-  <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--at-panel-subtle-bg)]/90 px-5 py-2.5 text-[0.7rem] uppercase tracking-[0.24em] text-[color:var(--at-text-tertiary)]">
+        <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--at-panel-subtle-bg)]/90 px-5 py-2.5 text-[0.7rem] tracking-[0.24em] text-[color:var(--at-text-tertiary)] uppercase">
           <FileMusic className="h-4 w-4" />
-          <span className="font-semibold text-[color:var(--at-text-secondary)]">{displayName}</span>
+          <span className="font-semibold text-[color:var(--at-text-secondary)]">
+            {displayName}
+          </span>
         </div>
       </header>
 
-      <AlphaTabPlayer source={source} isDarkMode={isDarkMode} soundFontUrl={soundFontUrl} />
+      <AlphaTabPlayer
+        source={source}
+        isDarkMode={isDarkMode}
+        soundFontUrl={soundFontUrl}
+      />
     </div>
   );
 };

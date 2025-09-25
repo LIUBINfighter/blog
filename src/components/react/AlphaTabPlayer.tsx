@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   Guitar,
   SkipBack,
@@ -42,9 +48,18 @@ type AlphaTabModel = {
 };
 
 type AlphaTabNote = { style?: AlphaTabModelStyle | null };
-type AlphaTabBeat = { style?: AlphaTabModelStyle | null; notes?: AlphaTabNote[] };
-type AlphaTabVoice = { style?: AlphaTabModelStyle | null; beats?: AlphaTabBeat[] };
-type AlphaTabBar = { style?: AlphaTabModelStyle | null; voices?: AlphaTabVoice[] };
+type AlphaTabBeat = {
+  style?: AlphaTabModelStyle | null;
+  notes?: AlphaTabNote[];
+};
+type AlphaTabVoice = {
+  style?: AlphaTabModelStyle | null;
+  beats?: AlphaTabBeat[];
+};
+type AlphaTabBar = {
+  style?: AlphaTabModelStyle | null;
+  voices?: AlphaTabVoice[];
+};
 type AlphaTabStaff = { bars?: AlphaTabBar[] };
 type AlphaTabTrack = {
   index: number;
@@ -60,7 +75,10 @@ type AlphaTabScore = {
 };
 
 type AlphaTabGlobals = {
-  AlphaTabApi: new (element: HTMLElement, options?: Record<string, unknown>) => AlphaTabApiInstance;
+  AlphaTabApi: new (
+    element: HTMLElement,
+    options?: Record<string, unknown>
+  ) => AlphaTabApiInstance;
   LayoutMode: { Page: number; Horizontal: number };
   synth: { PlayerState: { Playing: number; Stopped: number; Paused: number } };
   model: AlphaTabModel;
@@ -85,7 +103,10 @@ type AlphaTabApiInstance = {
   soundFontLoad: AlphaTabEvent<{ loaded: number; total: number }>;
   scoreLoaded: AlphaTabEvent<AlphaTabScore>;
   playerStateChanged: AlphaTabEvent<{ state: number }>;
-  playerPositionChanged: AlphaTabEvent<{ currentTime: number; endTime: number }>;
+  playerPositionChanged: AlphaTabEvent<{
+    currentTime: number;
+    endTime: number;
+  }>;
   playPause: () => void;
   stop: () => void;
   print: () => void;
@@ -108,7 +129,9 @@ declare global {
 
 const loadAlphaTabRuntime = () => {
   if (typeof window === "undefined") {
-    return Promise.reject(new Error("alphaTab runtime is only available in the browser"));
+    return Promise.reject(
+      new Error("alphaTab runtime is only available in the browser")
+    );
   }
 
   if (window.alphaTab) {
@@ -118,7 +141,7 @@ const loadAlphaTabRuntime = () => {
   if (!alphaTabLoader) {
     alphaTabLoader = new Promise((resolve, reject) => {
       const existing = document.querySelector<HTMLScriptElement>(
-        `script[src='${ALPHATAB_CDN}']`,
+        `script[src='${ALPHATAB_CDN}']`
       );
 
       if (existing && window.alphaTab) {
@@ -193,7 +216,10 @@ const resolveThemeColor = (cssVar: string, fallback: string) => {
   return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
 };
 
-const applyScoreColors = (scoreToColor: AlphaTabScore | null, darkMode: boolean) => {
+const applyScoreColors = (
+  scoreToColor: AlphaTabScore | null,
+  darkMode: boolean
+) => {
   const alphaTab = window.alphaTab;
   if (!alphaTab || !scoreToColor) return;
 
@@ -263,7 +289,10 @@ const applyScoreColors = (scoreToColor: AlphaTabScore | null, darkMode: boolean)
       model.TrackSubElement.BracesAndBrackets,
       model.TrackSubElement.SystemSeparator,
     ].forEach(element => trackStyle.colors.set(element, darkColor));
-    trackStyle.colors.set(model.TrackSubElement.StringTuning, secondaryDarkColor);
+    trackStyle.colors.set(
+      model.TrackSubElement.StringTuning,
+      secondaryDarkColor
+    );
 
     for (const staff of track.staves ?? []) {
       for (const bar of staff.bars ?? []) {
@@ -379,7 +408,9 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
   const mainRef = useRef<HTMLDivElement | null>(null);
   const apiRef = useRef<AlphaTabApiInstance | null>(null);
   const scoreRef = useRef<AlphaTabScore | null>(null);
-  const playerStateEnumRef = useRef<AlphaTabGlobals["synth"]["PlayerState"] | null>(null);
+  const playerStateEnumRef = useRef<
+    AlphaTabGlobals["synth"]["PlayerState"] | null
+  >(null);
   const layoutModeEnumRef = useRef<AlphaTabGlobals["LayoutMode"] | null>(null);
   const darkModeRef = useRef(isDarkMode);
 
@@ -388,7 +419,10 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [soundFontProgress, setSoundFontProgress] = useState(0);
   const [playerState, setPlayerState] = useState<number | null>(null);
-  const [songPosition, setSongPosition] = useState({ currentTime: 0, endTime: 0 });
+  const [songPosition, setSongPosition] = useState({
+    currentTime: 0,
+    endTime: 0,
+  });
   const [score, setScore] = useState<AlphaTabScore | null>(null);
   const [activeTracks, setActiveTracks] = useState<Set<number>>(new Set());
   const [isLooping, setIsLooping] = useState(false);
@@ -407,13 +441,19 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   }, []);
 
-  const registerEvent = useCallback(<T,>(event: AlphaTabEvent<T>, handler: (payload: T) => void) => {
-    event.on(handler);
-    return () => event.off?.(handler);
-  }, []);
+  const registerEvent = useCallback(
+    <T,>(event: AlphaTabEvent<T>, handler: (payload: T) => void) => {
+      event.on(handler);
+      return () => event.off?.(handler);
+    },
+    []
+  );
 
   const loadSource = useCallback(
-    async (descriptor: AlphaTabSource, explicitApi?: AlphaTabApiInstance | null) => {
+    async (
+      descriptor: AlphaTabSource,
+      explicitApi?: AlphaTabApiInstance | null
+    ) => {
       const api = explicitApi ?? apiRef.current;
       if (!api) return;
 
@@ -441,7 +481,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
           break;
       }
     },
-    [],
+    []
   );
 
   useEffect(() => {
@@ -500,20 +540,20 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
               });
             }
             setActiveTracks(renderedTracks);
-          }),
+          })
         );
 
         detachments.push(
           registerEvent(api.renderFinished, () => {
             setIsLoading(false);
-          }),
+          })
         );
 
         detachments.push(
           registerEvent(api.soundFontLoad, ({ loaded, total }) => {
             if (!total) return;
             setSoundFontProgress(Math.round((loaded / total) * 100));
-          }),
+          })
         );
 
         detachments.push(
@@ -536,7 +576,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
             } else {
               setLayoutMode("page");
             }
-          }),
+          })
         );
 
         detachments.push(
@@ -545,19 +585,19 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
             setScore(incomingScore);
 
             applyScoreColors(incomingScore, darkModeRef.current);
-          }),
+          })
         );
 
         detachments.push(
           registerEvent(api.playerStateChanged, ({ state }) => {
             setPlayerState(state);
-          }),
+          })
         );
 
         detachments.push(
           registerEvent(api.playerPositionChanged, payload => {
             setSongPosition(payload);
-          }),
+          })
         );
 
         void loadSource(source, api).catch(err => {
@@ -619,7 +659,10 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
   const handleTrackClick = useCallback((track: AlphaTabTrack) => {
     const api = apiRef.current;
     if (!api) return;
-    const renderTracks = typeof api.renderTracks === "function" ? api.renderTracks.bind(api) : null;
+    const renderTracks =
+      typeof api.renderTracks === "function"
+        ? api.renderTracks.bind(api)
+        : null;
     if (!renderTracks) return;
 
     setActiveTracks(prev => {
@@ -690,36 +733,45 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
     setIsCountInOn(next);
   }, [isCountInOn]);
 
-  const handleZoomChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    const api = apiRef.current;
-    if (!api) return;
-    const zoomValue = Number(event.target.value);
-    if (!Number.isFinite(zoomValue)) return;
-    setZoom(zoomValue);
+  const handleZoomChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const api = apiRef.current;
+      if (!api) return;
+      const zoomValue = Number(event.target.value);
+      if (!Number.isFinite(zoomValue)) return;
+      setZoom(zoomValue);
 
-    const display = api.settings.display ?? (api.settings.display = {});
-    display.scale = zoomValue / 100;
-    api.updateSettings();
-    api.render();
-  }, []);
+      const display = api.settings.display ?? (api.settings.display = {});
+      display.scale = zoomValue / 100;
+      api.updateSettings();
+      api.render();
+    },
+    []
+  );
 
-  const handleLayoutChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    const api = apiRef.current;
-    if (!api) return;
-    const mode = event.target.value as "page" | "horizontal";
-    setLayoutMode(mode);
+  const handleLayoutChange = useCallback(
+    (event: React.ChangeEvent<HTMLSelectElement>) => {
+      const api = apiRef.current;
+      if (!api) return;
+      const mode = event.target.value as "page" | "horizontal";
+      setLayoutMode(mode);
 
-    const display = api.settings.display ?? (api.settings.display = {});
-    const layouts = layoutModeEnumRef.current;
-    if (layouts) {
-      display.layoutMode = mode === "horizontal" ? layouts.Horizontal : layouts.Page;
-    }
-    api.updateSettings();
-    api.render();
-  }, []);
+      const display = api.settings.display ?? (api.settings.display = {});
+      const layouts = layoutModeEnumRef.current;
+      if (layouts) {
+        display.layoutMode =
+          mode === "horizontal" ? layouts.Horizontal : layouts.Page;
+      }
+      api.updateSettings();
+      api.render();
+    },
+    []
+  );
 
   const playerStateEnum = playerStateEnumRef.current;
-  const isPlaying = playerStateEnum ? playerState === playerStateEnum.Playing : false;
+  const isPlaying = playerStateEnum
+    ? playerState === playerStateEnum.Playing
+    : false;
   const controlsDisabled = !isPlayerReady || Boolean(error);
 
   const scoreTitle = useMemo(() => {
@@ -745,7 +797,17 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         }
         [data-alphatab-root] .at-cursor-beat {
           background: color-mix(in srgb, var(--at-accent) 80%, transparent) !important;
-          width: 3px !important;
+          position: relative;
+          /* Make the beat cursor width driven by a CSS variable so it can be tuned site-wide.
+             We set the element width to the variable as a hard override in case JS sets a fixed width. */
+          width: var(--at-cursor-beat-width, 6px) !important;
+        }
+        [data-alphatab-root] .at-cursor-beat::before {
+          content: "";
+          position: absolute;
+          top: 0;
+          bottom: 0;
+
         }
         [data-alphatab-root][data-theme='dark'] .at-cursor-bar {
           background: color-mix(in srgb, var(--at-accent) 36%, transparent) !important;
@@ -755,11 +817,33 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         }
         [data-alphatab-root][data-theme='dark'] .at-cursor-beat {
           background: color-mix(in srgb, var(--at-accent) 85%, transparent) !important;
+          width: var(--at-cursor-beat-width, 7px) !important;
         }
         [data-alphatab-root] .at-highlight,
         [data-alphatab-root] .at-highlight * {
           fill: var(--at-accent) !important;
           stroke: var(--at-accent) !important;
+        }
+        /* Select control: use consistent --at- variables so host theme controls appearance */
+        [data-alphatab-root] select {
+          color: var(--at-select-text) !important;
+          background: var(--at-select-surface) !important;
+          border-color: var(--at-border-color) !important;
+        }
+        /* Option items: provide readable text color; background will be themed per platform but we set a fallback */
+        [data-alphatab-root] select option {
+          color: var(--at-text-secondary) !important;
+          background: var(--at-panel-subtle-bg) !important;
+        }
+        /* Dark theme overrides should also rely on the --at- variables so colors are consistent */
+        [data-alphatab-root][data-theme='dark'] select {
+          color: var(--at-select-text) !important;
+          background: var(--at-select-surface) !important;
+          border-color: var(--at-border-color) !important;
+        }
+        [data-alphatab-root][data-theme='dark'] select option {
+          color: var(--at-text-secondary) !important;
+          background: color-mix(in srgb, var(--at-panel-bg) 60%, transparent) !important;
         }
       `}</style>
 
@@ -787,7 +871,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
                 type="button"
                 onClick={openTrackDialog}
                 disabled={!score?.tracks?.length}
-                className="flex h-10 w-10 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 hover:bg-[color:var(--at-track-hover-bg)]"
+                className="flex h-10 w-10 items-center justify-center rounded-full transition hover:bg-[color:var(--at-track-hover-bg)] disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label="Toggle track list"
               >
                 <Guitar className="h-4 w-4" />
@@ -808,7 +892,11 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
                 className="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--at-accent)] text-slate-900 transition disabled:cursor-not-allowed disabled:opacity-40"
                 aria-label={isPlaying ? "Pause" : "Play"}
               >
-                {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+                {isPlaying ? (
+                  <Pause className="h-6 w-6" />
+                ) : (
+                  <Play className="h-6 w-6" />
+                )}
               </button>
               <div className="text-sm text-[color:var(--at-text-secondary)]">
                 {scoreTitle || "未命名曲谱"}
@@ -819,7 +907,8 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
                 </span>
               )}
               <span className="font-mono text-xs text-[color:var(--at-text-secondary)]">
-                {formatDuration(songPosition.currentTime)} / {formatDuration(songPosition.endTime)}
+                {formatDuration(songPosition.currentTime)} /{" "}
+                {formatDuration(songPosition.endTime)}
               </span>
             </div>
 
@@ -828,7 +917,9 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
                 type="button"
                 onClick={toggleCountIn}
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-                  isCountInOn ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
+                  isCountInOn
+                    ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]"
+                    : "hover:bg-[color:var(--at-track-hover-bg)]"
                 }`}
                 aria-label="Toggle count-in"
               >
@@ -838,7 +929,9 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
                 type="button"
                 onClick={toggleMetronome}
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-                  isMetronomeOn ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
+                  isMetronomeOn
+                    ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]"
+                    : "hover:bg-[color:var(--at-track-hover-bg)]"
                 }`}
                 aria-label="Toggle metronome"
               >
@@ -848,7 +941,9 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
                 type="button"
                 onClick={toggleLoop}
                 className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-                  isLooping ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
+                  isLooping
+                    ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]"
+                    : "hover:bg-[color:var(--at-track-hover-bg)]"
                 }`}
                 aria-label="Toggle loop"
               >
@@ -862,12 +957,12 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
               >
                 <Printer className="h-4 w-4" />
               </button>
-              <div className="flex items-center rounded-full border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] px-2">
+              <div className="flex items-center rounded-xl border border-[color:var(--at-border-color)] bg-[color:var(--at-select-surface)] px-2">
                 <Search className="mr-1 hidden h-4 w-4 opacity-70 lg:block" />
                 <select
                   value={zoom}
                   onChange={handleZoomChange}
-                  className="bg-transparent py-1 text-sm focus:outline-none"
+                  className="rounded-xl bg-transparent py-1 text-sm focus:outline-none"
                   aria-label="Zoom"
                 >
                   {[25, 50, 75, 90, 100, 110, 125, 150, 200].map(level => (
@@ -877,11 +972,11 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
                   ))}
                 </select>
               </div>
-              <div className="flex items-center rounded-full border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] px-2">
+              <div className="flex items-center rounded-xl border border-[color:var(--at-border-color)] bg-[color:var(--at-select-surface)] px-2">
                 <select
                   value={layoutMode}
                   onChange={handleLayoutChange}
-                  className="bg-transparent py-1 text-sm focus:outline-none"
+                  className="rounded-xl bg-transparent py-1 text-sm focus:outline-none"
                   aria-label="Layout mode"
                 >
                   <option value="page">Page</option>
@@ -922,7 +1017,10 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
             className="relative z-10 max-h-[calc(100%-48px)] max-w-[calc(100%-48px)] overflow-hidden rounded-2xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] shadow-xl"
           >
             <div className="flex items-center justify-between gap-4 border-b border-[color:var(--at-border-color)] px-4 py-3">
-              <p id="at-tracks-title" className="text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--at-text-tertiary)]">
+              <p
+                id="at-tracks-title"
+                className="text-xs font-semibold tracking-[0.3em] text-[color:var(--at-text-tertiary)] uppercase"
+              >
                 Tracks
               </p>
               <button
@@ -946,14 +1044,18 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
                           className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition ${
                             isActive
                               ? "bg-[color:var(--at-track-active-bg)] text-[color:var(--at-track-active-icon)]"
-                              : "hover:bg-[color:var(--at-track-hover-bg)] text-[color:var(--at-text-secondary)]"
+                              : "text-[color:var(--at-text-secondary)] hover:bg-[color:var(--at-track-hover-bg)]"
                           }`}
                           autoFocus={isActive}
                         >
-                          <span className={`flex h-8 w-8 items-center justify-center ${isActive ? "text-[color:var(--at-track-active-icon)]" : "opacity-60"}`}>
+                          <span
+                            className={`flex h-8 w-8 items-center justify-center ${isActive ? "text-[color:var(--at-track-active-icon)]" : "opacity-60"}`}
+                          >
                             <Guitar size={18} />
                           </span>
-                          <span className="truncate">{track.name || `Track ${track.index + 1}`}</span>
+                          <span className="truncate">
+                            {track.name || `Track ${track.index + 1}`}
+                          </span>
                         </button>
                       </li>
                     );
