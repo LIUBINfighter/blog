@@ -69,7 +69,7 @@ type AlphaTabGlobals = {
 type AlphaTabApiInstance = {
   load: (source: string | ArrayBuffer | Blob | File) => void;
   loadAlphaTex?: (source: string) => void;
-  renderTracks?: (tracks: number[]) => void;
+  renderTracks?: (tracks: Array<number | AlphaTabTrack>) => void;
   tracks: AlphaTabTrack[];
   render: () => void;
   destroy: () => void;
@@ -339,12 +339,13 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
   const [songPosition, setSongPosition] = useState({ currentTime: 0, endTime: 0 });
   const [score, setScore] = useState<AlphaTabScore | null>(null);
   const [activeTracks, setActiveTracks] = useState<Set<number>>(new Set());
-  const [pendingTrackIndices, setPendingTrackIndices] = useState<number[] | null>(null);
   const [isLooping, setIsLooping] = useState(false);
   const [isMetronomeOn, setIsMetronomeOn] = useState(false);
   const [isCountInOn, setIsCountInOn] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [layoutMode, setLayoutMode] = useState<"page" | "horizontal">("page");
+  const [isTrackDialogOpen, setIsTrackDialogOpen] = useState(false);
+  const lastFocusedRef = useRef<HTMLElement | null>(null);
 
   const formatDuration = useCallback((milliseconds: number) => {
     if (!Number.isFinite(milliseconds)) return "00:00";
@@ -440,6 +441,13 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         detachments.push(
           registerEvent(api.renderStarted, () => {
             setIsLoading(true);
+            const renderedTracks = new Set<number>();
+            if (Array.isArray(api.tracks)) {
+              api.tracks.forEach(track => {
+                renderedTracks.add(track.index);
+              });
+            }
+            setActiveTracks(renderedTracks);
           }),
         );
 
@@ -483,13 +491,6 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
           registerEvent(api.scoreLoaded, incomingScore => {
             scoreRef.current = incomingScore;
             setScore(incomingScore);
-
-            const tracks = incomingScore?.tracks ?? [];
-            const trackIndices = tracks.map(track => track.index);
-            setActiveTracks(new Set(trackIndices));
-            if (trackIndices.length) {
-              setPendingTrackIndices(trackIndices);
-            }
 
             applyScoreColors(incomingScore, darkModeRef.current);
           }),
@@ -537,39 +538,41 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
     });
   }, [loadSource, source]);
 
+  // Track dialog: close on ESC and restore focus
   useEffect(() => {
-    const api = apiRef.current;
-    if (!api) return;
-    if (!pendingTrackIndices || pendingTrackIndices.length === 0) return;
+    if (!isTrackDialogOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setIsTrackDialogOpen(false);
+      }
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [isTrackDialogOpen]);
 
-    const availableTracks = Array.isArray(api.tracks) ? api.tracks : [];
-    if (!availableTracks.length) return;
+  const openTrackDialog = useCallback(() => {
+    lastFocusedRef.current = document.activeElement as HTMLElement | null;
+    setIsTrackDialogOpen(true);
+  }, []);
 
-    const availableIndices = new Set(availableTracks.map(track => track.index));
-    const valid = pendingTrackIndices.filter(index => availableIndices.has(index));
-    if (!valid.length) {
-      setPendingTrackIndices(null);
-      return;
+  const closeTrackDialog = useCallback(() => {
+    setIsTrackDialogOpen(false);
+    // restore focus to the last focused trigger
+    const last = lastFocusedRef.current;
+    if (last && typeof last.focus === "function") {
+      last.focus();
     }
+  }, []);
 
-    const frame = requestAnimationFrame(() => {
-      api.renderTracks?.(valid);
-    });
-
-    setPendingTrackIndices(null);
-
-    return () => cancelAnimationFrame(frame);
-  }, [pendingTrackIndices]);
-
-  const handleTrackClick = useCallback((trackIndex: number) => {
+  const handleTrackClick = useCallback((track: AlphaTabTrack) => {
     const api = apiRef.current;
     if (!api) return;
     const availableTracks = Array.isArray(api.tracks) ? api.tracks : [];
-    const hasTrack = availableTracks.some(track => track.index === trackIndex);
-    if (!hasTrack) return;
+    const resolvedTrack = availableTracks.find(t => t.index === track.index) ?? track;
+    if (!api.renderTracks) return;
 
-    setActiveTracks(new Set([trackIndex]));
-    api.renderTracks?.([trackIndex]);
+    api.renderTracks([resolvedTrack]);
+    setIsTrackDialogOpen(false);
   }, []);
 
   const handlePlayPause = useCallback(() => {
@@ -650,7 +653,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
       ref={containerRef}
       data-alphatab-root
       data-theme={isDarkMode ? "dark" : "light"}
-      className={`relative flex h-full min-h-[360px] w-full flex-col overflow-hidden rounded-3xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)] shadow-xl shadow-slate-900/10 backdrop-blur ${
+      className={`relative flex w-full flex-col overflow-hidden rounded-3xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)] shadow-xl shadow-slate-900/10 backdrop-blur ${
         className ?? ""
       }`}
     >
@@ -687,45 +690,12 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         </div>
       ) : (
         <>
-          <div className="flex flex-1 overflow-hidden">
-            <aside className="hidden w-40 shrink-0 flex-col border-r border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] md:flex">
-              <div className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--at-text-tertiary)]">
-                Tracks
-              </div>
-              <div className="flex-1 overflow-y-auto">
-                {score?.tracks?.length ? (
-                  score.tracks.map(track => {
-                    const isActive = activeTracks.has(track.index);
-                    return (
-                      <button
-                        key={track.index}
-                        type="button"
-                        onClick={() => handleTrackClick(track.index)}
-                        className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition ${
-                          isActive
-                            ? "bg-[color:var(--at-track-active-bg)] text-[color:var(--at-track-active-icon)]"
-                            : "hover:bg-[color:var(--at-track-hover-bg)] text-[color:var(--at-text-secondary)]"
-                        }`}
-                      >
-                        <span className={`flex h-8 w-8 items-center justify-center ${isActive ? "text-[color:var(--at-track-active-icon)]" : "opacity-60"}`}>
-                          <Guitar size={18} />
-                        </span>
-                        <span className="truncate">
-                          {track.name || `Track ${track.index + 1}`}
-                        </span>
-                      </button>
-                    );
-                  })
-                ) : (
-                  <div className="px-3 py-4 text-xs text-[color:var(--at-text-tertiary)]">
-                    曲谱载入后可切换不同声部。
-                  </div>
-                )}
-              </div>
-            </aside>
-
-            <div className="relative flex flex-1 flex-col">
-              <div ref={viewportRef} className="flex flex-1 overflow-y-auto">
+          <div className="relative">
+            <div className="relative flex flex-col">
+              <div
+                ref={viewportRef}
+                className="relative h-[420px] overflow-y-auto"
+              >
                 <div ref={mainRef} className="w-full" />
               </div>
             </div>
@@ -733,6 +703,16 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
 
           <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--at-border-color)] bg-[color:var(--at-control-surface)] px-3 py-2 text-[color:var(--at-control-text)]">
             <div className="flex flex-wrap items-center gap-3">
+              {/* Tracks button (will open modal in next step) */}
+              <button
+                type="button"
+                onClick={openTrackDialog}
+                disabled={!score?.tracks?.length}
+                className="flex h-10 w-10 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40 hover:bg-[color:var(--at-track-hover-bg)]"
+                aria-label="Toggle track list"
+              >
+                <Guitar className="h-4 w-4" />
+              </button>
               <button
                 type="button"
                 onClick={handleStop}
@@ -838,6 +818,74 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         <div className="pointer-events-none absolute inset-0 z-20 flex items-start justify-center bg-[color:var(--at-overlay-bg)] pt-10 backdrop-blur-sm">
           <div className="rounded-2xl border border-[color:var(--at-border-color)] bg-[color:var(--at-overlay-content-bg)] px-6 py-4 text-sm text-[color:var(--at-overlay-text)] shadow-xl">
             乐谱载入中… {soundFontProgress ? `${soundFontProgress}%` : ""}
+          </div>
+        </div>
+      )}
+
+      {/* Track selection modal (always available, above content) */}
+      {isTrackDialogOpen && (
+        <div
+          className="absolute inset-0 z-30 flex items-center justify-center"
+          aria-hidden={false}
+        >
+          {/* backdrop */}
+          <button
+            type="button"
+            aria-label="Close tracks dialog"
+            className="absolute inset-0 bg-[color:var(--at-overlay-bg)]"
+            onClick={closeTrackDialog}
+          />
+          {/* dialog */}
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="at-tracks-title"
+            className="relative z-10 max-h-[calc(100%-48px)] max-w-[calc(100%-48px)] overflow-hidden rounded-2xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] shadow-xl"
+          >
+            <div className="flex items-center justify-between gap-4 border-b border-[color:var(--at-border-color)] px-4 py-3">
+              <p id="at-tracks-title" className="text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--at-text-tertiary)]">
+                Tracks
+              </p>
+              <button
+                type="button"
+                className="rounded-full px-3 py-1 text-xs font-medium text-[color:var(--at-text-secondary)] transition hover:bg-[color:var(--at-track-hover-bg)]"
+                onClick={closeTrackDialog}
+              >
+                收起
+              </button>
+            </div>
+            <div className="max-h-[min(360px,calc(100vh-120px))] overflow-y-auto p-3">
+              <ul className="flex flex-col gap-1 pr-1 text-sm">
+                {score?.tracks?.length ? (
+                  score.tracks.map(track => {
+                    const isActive = activeTracks.has(track.index);
+                    return (
+                      <li key={track.index}>
+                        <button
+                          type="button"
+                          onClick={() => handleTrackClick(track)}
+                          className={`flex w-full items-center gap-2 rounded-lg px-3 py-2 text-left transition ${
+                            isActive
+                              ? "bg-[color:var(--at-track-active-bg)] text-[color:var(--at-track-active-icon)]"
+                              : "hover:bg-[color:var(--at-track-hover-bg)] text-[color:var(--at-text-secondary)]"
+                          }`}
+                          autoFocus={isActive}
+                        >
+                          <span className={`flex h-8 w-8 items-center justify-center ${isActive ? "text-[color:var(--at-track-active-icon)]" : "opacity-60"}`}>
+                            <Guitar size={18} />
+                          </span>
+                          <span className="truncate">{track.name || `Track ${track.index + 1}`}</span>
+                        </button>
+                      </li>
+                    );
+                  })
+                ) : (
+                  <li className="rounded-lg border border-dashed border-[color:var(--at-border-color)] p-3 text-xs text-[color:var(--at-text-tertiary)]">
+                    曲谱载入后可切换不同的乐器/分声部。
+                  </li>
+                )}
+              </ul>
+            </div>
           </div>
         </div>
       )}
