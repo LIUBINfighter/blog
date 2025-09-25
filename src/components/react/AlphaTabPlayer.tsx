@@ -1,10 +1,4 @@
-import React, {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   Guitar,
   SkipBack,
@@ -29,9 +23,7 @@ type AlphaTabEvent<T = unknown> = {
   off?: (handler: (payload: T) => void) => void;
 };
 
-type AlphaTabModelStyle = {
-  colors: Map<number, unknown>;
-};
+type AlphaTabModelStyle = { colors: Map<number, unknown> };
 
 type AlphaTabModel = {
   Color: { fromJson: (color: string) => unknown };
@@ -54,7 +46,12 @@ type AlphaTabBeat = { style?: AlphaTabModelStyle | null; notes?: AlphaTabNote[] 
 type AlphaTabVoice = { style?: AlphaTabModelStyle | null; beats?: AlphaTabBeat[] };
 type AlphaTabBar = { style?: AlphaTabModelStyle | null; voices?: AlphaTabVoice[] };
 type AlphaTabStaff = { bars?: AlphaTabBar[] };
-type AlphaTabTrack = { index: number; name?: string; style?: AlphaTabModelStyle | null; staves?: AlphaTabStaff[] };
+type AlphaTabTrack = {
+  index: number;
+  name?: string;
+  style?: AlphaTabModelStyle | null;
+  staves?: AlphaTabStaff[];
+};
 type AlphaTabScore = {
   title?: string;
   artist?: string;
@@ -72,14 +69,14 @@ type AlphaTabGlobals = {
 type AlphaTabApiInstance = {
   load: (source: string | ArrayBuffer | Blob | File) => void;
   loadAlphaTex?: (source: string) => void;
-  renderTracks: (tracks: AlphaTabTrack[]) => void;
+  renderTracks?: (tracks: number[]) => void;
   tracks: AlphaTabTrack[];
   render: () => void;
   destroy: () => void;
   updateSettings: () => void;
   settings: {
     player?: Record<string, unknown>;
-    display?: { scale?: number; layoutMode?: number; stretchForce?: number } & Record<string, unknown>;
+    display?: { scale?: number; layoutMode?: number } & Record<string, unknown>;
     [key: string]: unknown;
   };
   playerReady: AlphaTabEvent;
@@ -147,20 +144,169 @@ const loadAlphaTabRuntime = () => {
   return alphaTabLoader;
 };
 
-const suppressResizeObserverError = () => {
-  if (typeof window === "undefined") return () => undefined;
-  const resizeObserverLoopErr = "ResizeObserver loop completed with undelivered notifications";
-  const originalError = window.console.error;
-  window.console.error = (...args: unknown[]) => {
-    if (typeof args[0] === "string" && args[0].startsWith(resizeObserverLoopErr)) {
-      return;
+const applyScoreColors = (scoreToColor: AlphaTabScore | null, darkMode: boolean) => {
+  const alphaTab = window.alphaTab;
+  if (!alphaTab || !scoreToColor) return;
+
+  const { model } = alphaTab;
+  if (!model) return;
+
+  const resetColors = (score: AlphaTabScore) => {
+    score.style = null;
+    for (const track of score.tracks ?? []) {
+      track.style = null;
+      for (const staff of track.staves ?? []) {
+        for (const bar of staff.bars ?? []) {
+          bar.style = null;
+          for (const voice of bar.voices ?? []) {
+            voice.style = null;
+            for (const beat of voice.beats ?? []) {
+              beat.style = null;
+              for (const note of beat.notes ?? []) {
+                note.style = null;
+              }
+            }
+          }
+        }
+      }
     }
-    originalError.apply(window.console, args as [unknown, ...unknown[]]);
   };
 
-  return () => {
-    window.console.error = originalError;
-  };
+  if (!darkMode) {
+    resetColors(scoreToColor);
+    return;
+  }
+
+  const darkColor = model.Color.fromJson("#d1d5db");
+  const secondaryDarkColor = model.Color.fromJson("#9ca3af");
+
+  scoreToColor.style = new model.ScoreStyle();
+  const scoreStyle = scoreToColor.style;
+  if (!scoreStyle) return;
+
+  [
+    model.ScoreSubElement.Title,
+    model.ScoreSubElement.SubTitle,
+    model.ScoreSubElement.ChordDiagramList,
+  ].forEach(element => scoreStyle.colors.set(element, darkColor));
+
+  [
+    model.ScoreSubElement.Artist,
+    model.ScoreSubElement.Album,
+    model.ScoreSubElement.Words,
+    model.ScoreSubElement.Music,
+    model.ScoreSubElement.WordsAndMusic,
+    model.ScoreSubElement.Transcriber,
+    model.ScoreSubElement.Copyright,
+    model.ScoreSubElement.CopyrightSecondLine,
+  ].forEach(element => scoreStyle.colors.set(element, secondaryDarkColor));
+
+  for (const track of scoreToColor.tracks ?? []) {
+    track.style = new model.TrackStyle();
+    const trackStyle = track.style;
+    if (!trackStyle) continue;
+
+    [
+      model.TrackSubElement.TrackName,
+      model.TrackSubElement.BracesAndBrackets,
+      model.TrackSubElement.SystemSeparator,
+    ].forEach(element => trackStyle.colors.set(element, darkColor));
+    trackStyle.colors.set(model.TrackSubElement.StringTuning, secondaryDarkColor);
+
+    for (const staff of track.staves ?? []) {
+      for (const bar of staff.bars ?? []) {
+        bar.style = new model.BarStyle();
+        const barStyle = bar.style;
+        if (!barStyle) continue;
+
+        [
+          model.BarSubElement.StandardNotationRepeats,
+          model.BarSubElement.GuitarTabsRepeats,
+          model.BarSubElement.SlashRepeats,
+          model.BarSubElement.NumberedRepeats,
+          model.BarSubElement.StandardNotationBarLines,
+          model.BarSubElement.GuitarTabsBarLines,
+          model.BarSubElement.SlashBarLines,
+          model.BarSubElement.NumberedBarLines,
+          model.BarSubElement.StandardNotationClef,
+          model.BarSubElement.GuitarTabsClef,
+          model.BarSubElement.StandardNotationKeySignature,
+          model.BarSubElement.NumberedKeySignature,
+          model.BarSubElement.StandardNotationTimeSignature,
+          model.BarSubElement.GuitarTabsTimeSignature,
+          model.BarSubElement.SlashTimeSignature,
+          model.BarSubElement.NumberedTimeSignature,
+          model.BarSubElement.StandardNotationStaffLine,
+          model.BarSubElement.GuitarTabsStaffLine,
+          model.BarSubElement.SlashStaffLine,
+          model.BarSubElement.NumberedStaffLine,
+          model.BarSubElement.StandardNotationBarNumber,
+          model.BarSubElement.GuitarTabsBarNumber,
+          model.BarSubElement.SlashBarNumber,
+          model.BarSubElement.NumberedBarNumber,
+        ].forEach(element => barStyle.colors.set(element, darkColor));
+
+        for (const voice of bar.voices ?? []) {
+          voice.style = new model.VoiceStyle();
+          const voiceStyle = voice.style;
+          if (!voiceStyle) continue;
+          voiceStyle.colors.set(model.VoiceSubElement.Glyphs, darkColor);
+
+          for (const beat of voice.beats ?? []) {
+            beat.style = new model.BeatStyle();
+            const beatStyle = beat.style;
+            if (!beatStyle) continue;
+
+            [
+              model.BeatSubElement.StandardNotationStem,
+              model.BeatSubElement.GuitarTabStem,
+              model.BeatSubElement.SlashStem,
+              model.BeatSubElement.StandardNotationFlags,
+              model.BeatSubElement.GuitarTabFlags,
+              model.BeatSubElement.SlashFlags,
+              model.BeatSubElement.StandardNotationBeams,
+              model.BeatSubElement.GuitarTabBeams,
+              model.BeatSubElement.SlashBeams,
+              model.BeatSubElement.StandardNotationTuplet,
+              model.BeatSubElement.GuitarTabTuplet,
+              model.BeatSubElement.SlashTuplet,
+              model.BeatSubElement.NumberedTuplet,
+              model.BeatSubElement.StandardNotationRests,
+              model.BeatSubElement.GuitarTabRests,
+              model.BeatSubElement.SlashRests,
+              model.BeatSubElement.NumberedRests,
+              model.BeatSubElement.Effects,
+              model.BeatSubElement.StandardNotationEffects,
+              model.BeatSubElement.GuitarTabEffects,
+              model.BeatSubElement.SlashEffects,
+              model.BeatSubElement.NumberedEffects,
+              model.BeatSubElement.NumberedDuration,
+            ].forEach(element => beatStyle.colors.set(element, darkColor));
+
+            for (const note of beat.notes ?? []) {
+              note.style = new model.NoteStyle();
+              const noteStyle = note.style;
+              if (!noteStyle) continue;
+
+              [
+                model.NoteSubElement.StandardNotationNoteHead,
+                model.NoteSubElement.SlashNoteHead,
+                model.NoteSubElement.GuitarTabFretNumber,
+                model.NoteSubElement.NumberedNumber,
+                model.NoteSubElement.StandardNotationAccidentals,
+                model.NoteSubElement.NumberedAccidentals,
+                model.NoteSubElement.Effects,
+                model.NoteSubElement.StandardNotationEffects,
+                model.NoteSubElement.GuitarTabEffects,
+                model.NoteSubElement.SlashEffects,
+                model.NoteSubElement.NumberedEffects,
+              ].forEach(element => noteStyle.colors.set(element, darkColor));
+            }
+          }
+        }
+      }
+    }
+  }
 };
 
 type AlphaTabPlayerProps = {
@@ -182,274 +328,100 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
   const apiRef = useRef<AlphaTabApiInstance | null>(null);
   const scoreRef = useRef<AlphaTabScore | null>(null);
   const playerStateEnumRef = useRef<AlphaTabGlobals["synth"]["PlayerState"] | null>(null);
-  const layoutModeRef = useRef<AlphaTabGlobals["LayoutMode"] | null>(null);
+  const layoutModeEnumRef = useRef<AlphaTabGlobals["LayoutMode"] | null>(null);
+  const darkModeRef = useRef(isDarkMode);
 
-  const [status, setStatus] = useState<"boot" | "loading" | "ready" | "error">("boot");
-  const [errorMessage, setErrorMessage] = useState<string>("");
-  const [runtimeReady, setRuntimeReady] = useState(false);
-
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
   const [soundFontProgress, setSoundFontProgress] = useState(0);
-  const [scoreMeta, setScoreMeta] = useState<{ title?: string; artist?: string } | null>(null);
-  const [activeTracks, setActiveTracks] = useState<Set<number>>(new Set());
   const [playerState, setPlayerState] = useState<number | null>(null);
-  const [songPosition, setSongPosition] = useState<{ currentTime: number; endTime: number }>({
-    currentTime: 0,
-    endTime: 0,
-  });
+  const [songPosition, setSongPosition] = useState({ currentTime: 0, endTime: 0 });
+  const [score, setScore] = useState<AlphaTabScore | null>(null);
+  const [activeTracks, setActiveTracks] = useState<Set<number>>(new Set());
+  const [pendingTrackIndices, setPendingTrackIndices] = useState<number[] | null>(null);
   const [isLooping, setIsLooping] = useState(false);
   const [isMetronomeOn, setIsMetronomeOn] = useState(false);
   const [isCountInOn, setIsCountInOn] = useState(false);
   const [zoom, setZoom] = useState(100);
   const [layoutMode, setLayoutMode] = useState<"page" | "horizontal">("page");
 
-  useEffect(() => suppressResizeObserverError(), []);
-
   const formatDuration = useCallback((milliseconds: number) => {
     if (!Number.isFinite(milliseconds)) return "00:00";
-    let seconds = Math.max(milliseconds / 1000, 0);
-    const minutes = Math.floor(seconds / 60);
-    seconds = Math.floor(seconds - minutes * 60);
+    const totalSeconds = Math.max(milliseconds / 1000, 0);
+    const minutes = Math.floor(totalSeconds / 60);
+    const seconds = Math.floor(totalSeconds % 60);
     return `${String(minutes).padStart(2, "0")}:${String(seconds).padStart(2, "0")}`;
   }, []);
 
-  const attachEvent = useCallback(<T,>(event: AlphaTabEvent<T>, handler: (payload: T) => void) => {
+  const registerEvent = useCallback(<T,>(event: AlphaTabEvent<T>, handler: (payload: T) => void) => {
     event.on(handler);
-    return () => {
-      event.off?.(handler);
-    };
+    return () => event.off?.(handler);
   }, []);
 
-  const applyScoreColors = useCallback((scoreToColor: AlphaTabScore | null, darkMode: boolean) => {
-    const alphaTab = window.alphaTab;
-    if (!alphaTab || !scoreToColor) return;
+  const loadSource = useCallback(
+    async (descriptor: AlphaTabSource, explicitApi?: AlphaTabApiInstance | null) => {
+      const api = explicitApi ?? apiRef.current;
+      if (!api) return;
 
-    const { model } = alphaTab;
-    if (!model) return;
+      setIsLoading(true);
+      setSoundFontProgress(0);
 
-    const resetColors = (score: AlphaTabScore) => {
-      score.style = null;
-      for (const track of score.tracks ?? []) {
-        track.style = null;
-        for (const staff of track.staves ?? []) {
-          for (const bar of staff.bars ?? []) {
-            bar.style = null;
-            for (const voice of bar.voices ?? []) {
-              voice.style = null;
-              for (const beat of voice.beats ?? []) {
-                beat.style = null;
-                for (const note of beat.notes ?? []) {
-                  note.style = null;
-                }
-              }
-            }
+      switch (descriptor.type) {
+        case "url":
+          api.load(descriptor.value);
+          break;
+        case "file":
+          api.load(await descriptor.value.arrayBuffer());
+          break;
+        case "arrayBuffer":
+          api.load(descriptor.value);
+          break;
+        case "alphaTex":
+          if (typeof api.loadAlphaTex === "function") {
+            api.loadAlphaTex(descriptor.value);
+          } else {
+            api.load(descriptor.value);
           }
-        }
+          break;
+        default:
+          break;
       }
-    };
-
-    if (!darkMode) {
-      resetColors(scoreToColor);
-      return;
-    }
-
-    const darkColor = model.Color.fromJson("#d1d5db");
-    const secondaryDarkColor = model.Color.fromJson("#9ca3af");
-
-    scoreToColor.style = new model.ScoreStyle();
-    const scoreStyle = scoreToColor.style;
-    if (!scoreStyle) return;
-    const scorePrimaryElements = [
-      model.ScoreSubElement.Title,
-      model.ScoreSubElement.SubTitle,
-      model.ScoreSubElement.ChordDiagramList,
-    ];
-    scorePrimaryElements.forEach((element: number) => scoreStyle.colors.set(element, darkColor));
-    const scoreSecondaryElements = [
-      model.ScoreSubElement.Artist,
-      model.ScoreSubElement.Album,
-      model.ScoreSubElement.Words,
-      model.ScoreSubElement.Music,
-      model.ScoreSubElement.WordsAndMusic,
-      model.ScoreSubElement.Transcriber,
-      model.ScoreSubElement.Copyright,
-      model.ScoreSubElement.CopyrightSecondLine,
-    ];
-    scoreSecondaryElements.forEach((element: number) =>
-      scoreStyle.colors.set(element, secondaryDarkColor),
-    );
-
-    for (const track of scoreToColor.tracks ?? []) {
-      track.style = new model.TrackStyle();
-      const trackStyle = track.style;
-      if (!trackStyle) continue;
-      [
-        model.TrackSubElement.TrackName,
-        model.TrackSubElement.BracesAndBrackets,
-        model.TrackSubElement.SystemSeparator,
-      ].forEach((element: number) => trackStyle.colors.set(element, darkColor));
-      trackStyle.colors.set(model.TrackSubElement.StringTuning, secondaryDarkColor);
-
-      for (const staff of track.staves ?? []) {
-        for (const bar of staff.bars ?? []) {
-          bar.style = new model.BarStyle();
-          const barStyle = bar.style;
-          if (!barStyle) continue;
-          [
-            model.BarSubElement.StandardNotationRepeats,
-            model.BarSubElement.GuitarTabsRepeats,
-            model.BarSubElement.SlashRepeats,
-            model.BarSubElement.NumberedRepeats,
-            model.BarSubElement.StandardNotationBarLines,
-            model.BarSubElement.GuitarTabsBarLines,
-            model.BarSubElement.SlashBarLines,
-            model.BarSubElement.NumberedBarLines,
-            model.BarSubElement.StandardNotationClef,
-            model.BarSubElement.GuitarTabsClef,
-            model.BarSubElement.StandardNotationKeySignature,
-            model.BarSubElement.NumberedKeySignature,
-            model.BarSubElement.StandardNotationTimeSignature,
-            model.BarSubElement.GuitarTabsTimeSignature,
-            model.BarSubElement.SlashTimeSignature,
-            model.BarSubElement.NumberedTimeSignature,
-            model.BarSubElement.StandardNotationStaffLine,
-            model.BarSubElement.GuitarTabsStaffLine,
-            model.BarSubElement.SlashStaffLine,
-            model.BarSubElement.NumberedStaffLine,
-            model.BarSubElement.StandardNotationBarNumber,
-            model.BarSubElement.GuitarTabsBarNumber,
-            model.BarSubElement.SlashBarNumber,
-            model.BarSubElement.NumberedBarNumber,
-          ].forEach((element: number) => barStyle.colors.set(element, darkColor));
-
-          for (const voice of bar.voices ?? []) {
-            voice.style = new model.VoiceStyle();
-            const voiceStyle = voice.style;
-            if (!voiceStyle) continue;
-            voiceStyle.colors.set(model.VoiceSubElement.Glyphs, darkColor);
-
-            for (const beat of voice.beats ?? []) {
-              beat.style = new model.BeatStyle();
-              const beatStyle = beat.style;
-              if (!beatStyle) continue;
-              [
-                model.BeatSubElement.StandardNotationStem,
-                model.BeatSubElement.GuitarTabStem,
-                model.BeatSubElement.SlashStem,
-                model.BeatSubElement.StandardNotationFlags,
-                model.BeatSubElement.GuitarTabFlags,
-                model.BeatSubElement.SlashFlags,
-                model.BeatSubElement.StandardNotationBeams,
-                model.BeatSubElement.GuitarTabBeams,
-                model.BeatSubElement.SlashBeams,
-                model.BeatSubElement.StandardNotationTuplet,
-                model.BeatSubElement.GuitarTabTuplet,
-                model.BeatSubElement.SlashTuplet,
-                model.BeatSubElement.NumberedTuplet,
-                model.BeatSubElement.StandardNotationRests,
-                model.BeatSubElement.GuitarTabRests,
-                model.BeatSubElement.SlashRests,
-                model.BeatSubElement.NumberedRests,
-                model.BeatSubElement.Effects,
-                model.BeatSubElement.StandardNotationEffects,
-                model.BeatSubElement.GuitarTabEffects,
-                model.BeatSubElement.SlashEffects,
-                model.BeatSubElement.NumberedEffects,
-                model.BeatSubElement.NumberedDuration,
-              ].forEach((element: number) => beatStyle.colors.set(element, darkColor));
-
-              for (const note of beat.notes ?? []) {
-                note.style = new model.NoteStyle();
-                const noteStyle = note.style;
-                if (!noteStyle) continue;
-                [
-                  model.NoteSubElement.StandardNotationNoteHead,
-                  model.NoteSubElement.SlashNoteHead,
-                  model.NoteSubElement.GuitarTabFretNumber,
-                  model.NoteSubElement.NumberedNumber,
-                  model.NoteSubElement.StandardNotationAccidentals,
-                  model.NoteSubElement.NumberedAccidentals,
-                  model.NoteSubElement.Effects,
-                  model.NoteSubElement.StandardNotationEffects,
-                  model.NoteSubElement.GuitarTabEffects,
-                  model.NoteSubElement.SlashEffects,
-                  model.NoteSubElement.NumberedEffects,
-                ].forEach((element: number) => noteStyle.colors.set(element, darkColor));
-              }
-            }
-          }
-        }
-      }
-    }
-  }, []);
+    },
+    [],
+  );
 
   useEffect(() => {
-    if (typeof document === "undefined") return;
-    const root = containerRef.current;
-    if (!root) return;
-    root.dataset.theme = isDarkMode ? "dark" : "light";
+    darkModeRef.current = isDarkMode;
+    const container = containerRef.current;
+    if (container) {
+      container.dataset.theme = isDarkMode ? "dark" : "light";
+    }
     if (scoreRef.current) {
       applyScoreColors(scoreRef.current, isDarkMode);
       apiRef.current?.render();
     }
-  }, [applyScoreColors, isDarkMode]);
-
-  const loadSourceDescriptor = useCallback(async (descriptor: AlphaTabSource) => {
-    const api = apiRef.current;
-    if (!api) return;
-
-    switch (descriptor.type) {
-      case "url":
-        api.load(descriptor.value);
-        break;
-      case "file": {
-        const buffer = await descriptor.value.arrayBuffer();
-        api.load(buffer);
-        break;
-      }
-      case "arrayBuffer":
-        api.load(descriptor.value);
-        break;
-      case "alphaTex":
-        if (typeof api.loadAlphaTex === "function") {
-          api.loadAlphaTex(descriptor.value);
-        } else {
-          api.load(descriptor.value);
-        }
-        break;
-      default:
-        break;
-    }
-  }, []);
+  }, [isDarkMode]);
 
   useEffect(() => {
-    let cancelled = false;
-    if (!mainRef.current || !viewportRef.current) {
-      return;
-    }
+    let disposed = false;
+    if (!mainRef.current || !viewportRef.current) return;
 
-    setStatus("loading");
-    setErrorMessage("");
+    setError(null);
+    setIsLoading(true);
 
     loadAlphaTabRuntime()
       .then(() => {
-        if (cancelled) return;
-
-        if (!window.alphaTab) {
+        if (disposed) return;
+        if (!window.alphaTab || !mainRef.current) {
           throw new Error("alphaTab.js 运行时不可用");
         }
 
         const alphaTab = window.alphaTab;
         playerStateEnumRef.current = alphaTab.synth?.PlayerState ?? null;
-        layoutModeRef.current = alphaTab.LayoutMode ?? null;
+        layoutModeEnumRef.current = alphaTab.LayoutMode ?? null;
 
-        const host = mainRef.current;
-        if (!host) {
-          throw new Error("未找到 alphaTab 容器");
-        }
-
-        const settings = {
+        const api = new alphaTab.AlphaTabApi(mainRef.current, {
           player: {
             enablePlayer: true,
             soundFont: soundFontUrl ?? DEFAULT_SOUNDFONT,
@@ -459,51 +431,47 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
             layoutMode: alphaTab.LayoutMode?.Page,
             stretchForce: 0.9,
           },
-        };
+        }) as AlphaTabApiInstance;
 
-        const api = new alphaTab.AlphaTabApi(host, settings) as AlphaTabApiInstance;
         apiRef.current = api;
-        setRuntimeReady(true);
 
         const detachments: Array<() => void> = [];
 
         detachments.push(
-          attachEvent(api.renderStarted, () => {
+          registerEvent(api.renderStarted, () => {
             setIsLoading(true);
           }),
         );
 
         detachments.push(
-          attachEvent(api.renderFinished, () => {
+          registerEvent(api.renderFinished, () => {
             setIsLoading(false);
-            setStatus("ready");
-            if (api.tracks?.length) {
-              const active = new Set<number>(api.tracks.map(track => track.index));
-              setActiveTracks(active);
-            }
           }),
         );
 
         detachments.push(
-          attachEvent(api.soundFontLoad, ({ loaded, total }) => {
-            if (total) {
-              setSoundFontProgress(Math.round((loaded / total) * 100));
-            }
+          registerEvent(api.soundFontLoad, ({ loaded, total }) => {
+            if (!total) return;
+            setSoundFontProgress(Math.round((loaded / total) * 100));
           }),
         );
 
         detachments.push(
-          attachEvent(api.playerReady, () => {
+          registerEvent(api.playerReady, () => {
             setIsPlayerReady(true);
-            setStatus("ready");
             setIsLooping(api.isLooping);
             setIsMetronomeOn(api.metronomeVolume > 0);
             setIsCountInOn(api.countInVolume > 0);
+
             const display = api.settings.display ?? {};
             if (typeof display.scale === "number") {
               setZoom(Math.round(display.scale * 100));
             }
-            if (display.layoutMode === layoutModeRef.current?.Horizontal) {
+
+            if (
+              layoutModeEnumRef.current &&
+              display.layoutMode === layoutModeEnumRef.current.Horizontal
+            ) {
               setLayoutMode("horizontal");
             } else {
               setLayoutMode("page");
@@ -512,34 +480,35 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         );
 
         detachments.push(
-          attachEvent(api.scoreLoaded, score => {
-            scoreRef.current = score;
-            setScoreMeta({ title: score?.title, artist: score?.artist });
-            applyScoreColors(score, isDarkMode);
-            const tracks = score?.tracks ?? [];
-            if (tracks.length) {
-              const indices = new Set<number>(tracks.map(track => track.index));
-              setActiveTracks(indices);
-              api.renderTracks(tracks);
+          registerEvent(api.scoreLoaded, incomingScore => {
+            scoreRef.current = incomingScore;
+            setScore(incomingScore);
+
+            const tracks = incomingScore?.tracks ?? [];
+            const trackIndices = tracks.map(track => track.index);
+            setActiveTracks(new Set(trackIndices));
+            if (trackIndices.length) {
+              setPendingTrackIndices(trackIndices);
             }
+
+            applyScoreColors(incomingScore, darkModeRef.current);
           }),
         );
 
         detachments.push(
-          attachEvent(api.playerStateChanged, ({ state }) => {
+          registerEvent(api.playerStateChanged, ({ state }) => {
             setPlayerState(state);
           }),
         );
 
         detachments.push(
-          attachEvent(api.playerPositionChanged, ({ currentTime, endTime }) => {
-            setSongPosition({ currentTime, endTime });
+          registerEvent(api.playerPositionChanged, payload => {
+            setSongPosition(payload);
           }),
         );
 
-        loadSourceDescriptor(source).catch(error => {
-          setErrorMessage(error instanceof Error ? error.message : String(error));
-          setStatus("error");
+        void loadSource(source, api).catch(err => {
+          setError(err instanceof Error ? err.message : String(err));
         });
 
         return () => {
@@ -547,106 +516,145 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
           api.destroy();
         };
       })
-      .catch(error => {
-        if (cancelled) return;
-        setErrorMessage(error instanceof Error ? error.message : String(error));
-        setStatus("error");
+      .catch(err => {
+        if (disposed) return;
+        setError(err instanceof Error ? err.message : String(err));
+        setIsLoading(false);
       });
 
     return () => {
-      cancelled = true;
+      disposed = true;
       apiRef.current?.destroy();
       apiRef.current = null;
       scoreRef.current = null;
-      setRuntimeReady(false);
-      setIsPlayerReady(false);
-      setActiveTracks(new Set());
     };
-  }, [attachEvent, isDarkMode, loadSourceDescriptor, soundFontUrl, source]);
+  }, [loadSource, registerEvent, soundFontUrl]);
 
   useEffect(() => {
-    if (!runtimeReady || !apiRef.current) return;
-    setStatus("loading");
-    loadSourceDescriptor(source).catch(error => {
-      setErrorMessage(error instanceof Error ? error.message : String(error));
-      setStatus("error");
-    });
-  }, [loadSourceDescriptor, runtimeReady, source]);
-
-  const handleTrackClick = useCallback((track: AlphaTabTrack) => {
     if (!apiRef.current) return;
-    apiRef.current.renderTracks([track]);
-    setActiveTracks(new Set([track.index]));
+    void loadSource(source).catch(err => {
+      setError(err instanceof Error ? err.message : String(err));
+    });
+  }, [loadSource, source]);
+
+  useEffect(() => {
+    const api = apiRef.current;
+    if (!api) return;
+    if (!pendingTrackIndices || pendingTrackIndices.length === 0) return;
+
+    const availableTracks = Array.isArray(api.tracks) ? api.tracks : [];
+    if (!availableTracks.length) return;
+
+    const availableIndices = new Set(availableTracks.map(track => track.index));
+    const valid = pendingTrackIndices.filter(index => availableIndices.has(index));
+    if (!valid.length) {
+      setPendingTrackIndices(null);
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      api.renderTracks?.(valid);
+    });
+
+    setPendingTrackIndices(null);
+
+    return () => cancelAnimationFrame(frame);
+  }, [pendingTrackIndices]);
+
+  const handleTrackClick = useCallback((trackIndex: number) => {
+    const api = apiRef.current;
+    if (!api) return;
+    const availableTracks = Array.isArray(api.tracks) ? api.tracks : [];
+    const hasTrack = availableTracks.some(track => track.index === trackIndex);
+    if (!hasTrack) return;
+
+    setActiveTracks(new Set([trackIndex]));
+    api.renderTracks?.([trackIndex]);
   }, []);
 
-  const handlePlayPause = useCallback(() => apiRef.current?.playPause(), []);
-  const handleStop = useCallback(() => apiRef.current?.stop(), []);
-  const handlePrint = useCallback(() => apiRef.current?.print(), []);
+  const handlePlayPause = useCallback(() => {
+    apiRef.current?.playPause();
+  }, []);
+
+  const handleStop = useCallback(() => {
+    apiRef.current?.stop();
+  }, []);
+
+  const handlePrint = useCallback(() => {
+    apiRef.current?.print();
+  }, []);
 
   const toggleLoop = useCallback(() => {
-    if (!apiRef.current) return;
+    const api = apiRef.current;
+    if (!api) return;
     const next = !isLooping;
-    apiRef.current.isLooping = next;
+    api.isLooping = next;
     setIsLooping(next);
   }, [isLooping]);
 
   const toggleMetronome = useCallback(() => {
-    if (!apiRef.current) return;
+    const api = apiRef.current;
+    if (!api) return;
     const next = !isMetronomeOn;
-    apiRef.current.metronomeVolume = next ? 1 : 0;
+    api.metronomeVolume = next ? 1 : 0;
     setIsMetronomeOn(next);
   }, [isMetronomeOn]);
 
   const toggleCountIn = useCallback(() => {
-    if (!apiRef.current) return;
+    const api = apiRef.current;
+    if (!api) return;
     const next = !isCountInOn;
-    apiRef.current.countInVolume = next ? 1 : 0;
+    api.countInVolume = next ? 1 : 0;
     setIsCountInOn(next);
   }, [isCountInOn]);
 
   const handleZoomChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    if (!apiRef.current) return;
+    const api = apiRef.current;
+    if (!api) return;
     const zoomValue = Number(event.target.value);
     if (!Number.isFinite(zoomValue)) return;
     setZoom(zoomValue);
-    const display = apiRef.current.settings.display ?? (apiRef.current.settings.display = {});
+
+    const display = api.settings.display ?? (api.settings.display = {});
     display.scale = zoomValue / 100;
-    apiRef.current.updateSettings();
-    apiRef.current.render();
+    api.updateSettings();
+    api.render();
   }, []);
 
   const handleLayoutChange = useCallback((event: React.ChangeEvent<HTMLSelectElement>) => {
-    if (!apiRef.current) return;
+    const api = apiRef.current;
+    if (!api) return;
     const mode = event.target.value as "page" | "horizontal";
     setLayoutMode(mode);
-    const display = apiRef.current.settings.display ?? (apiRef.current.settings.display = {});
-    const layoutModes = layoutModeRef.current;
-    if (layoutModes) {
-      display.layoutMode = mode === "horizontal" ? layoutModes.Horizontal : layoutModes.Page;
+
+    const display = api.settings.display ?? (api.settings.display = {});
+    const layouts = layoutModeEnumRef.current;
+    if (layouts) {
+      display.layoutMode = mode === "horizontal" ? layouts.Horizontal : layouts.Page;
     }
-    apiRef.current.updateSettings();
-    apiRef.current.render();
+    api.updateSettings();
+    api.render();
   }, []);
 
   const playerStateEnum = playerStateEnumRef.current;
   const isPlaying = playerStateEnum ? playerState === playerStateEnum.Playing : false;
-  const controlsDisabled = !isPlayerReady || status === "error";
+  const controlsDisabled = !isPlayerReady || Boolean(error);
 
   const scoreTitle = useMemo(() => {
-    if (!scoreMeta) return "";
-    return [scoreMeta.title, scoreMeta.artist].filter(Boolean).join(" — ");
-  }, [scoreMeta]);
+    if (!score) return "";
+    return [score.title, score.artist].filter(Boolean).join(" — ");
+  }, [score]);
 
   return (
     <div
       ref={containerRef}
       data-alphatab-root
       data-theme={isDarkMode ? "dark" : "light"}
-      className={`relative flex w-full flex-col gap-4 rounded-3xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)] p-4 shadow-xl shadow-slate-900/10 transition-colors duration-300 backdrop-blur ${
+      className={`relative flex h-full min-h-[360px] w-full flex-col overflow-hidden rounded-3xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)] shadow-xl shadow-slate-900/10 backdrop-blur ${
         className ?? ""
       }`}
     >
-      <style>{`
+      <style suppressHydrationWarning>{`
         [data-alphatab-root] .at-cursor-bar {
           background: rgba(255, 242, 0, 0.25) !important;
         }
@@ -657,13 +665,13 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
           background: color-mix(in srgb, var(--at-accent) 80%, transparent) !important;
           width: 3px !important;
         }
-        [data-alphatab-root][data-theme="dark"] .at-cursor-bar {
+        [data-alphatab-root][data-theme='dark'] .at-cursor-bar {
           background: color-mix(in srgb, var(--at-accent) 35%, transparent) !important;
         }
-        [data-alphatab-root][data-theme="dark"] .at-selection div {
+        [data-alphatab-root][data-theme='dark'] .at-selection div {
           background: color-mix(in srgb, var(--at-accent) 24%, transparent) !important;
         }
-        [data-alphatab-root][data-theme="dark"] .at-cursor-beat {
+        [data-alphatab-root][data-theme='dark'] .at-cursor-beat {
           background: color-mix(in srgb, var(--at-accent) 85%, transparent) !important;
         }
         [data-alphatab-root] .at-highlight,
@@ -673,173 +681,160 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         }
       `}</style>
 
-      {status === "error" ? (
-        <div className="rounded-2xl border border-red-500/40 bg-red-500/10 p-6 text-sm text-red-200">
-          {errorMessage || "加载 alphaTab 时出现未知错误。"}
+      {error ? (
+        <div className="m-4 rounded-2xl border border-red-500/40 bg-red-500/10 p-6 text-sm text-red-100">
+          {error}
         </div>
       ) : (
         <>
-          <div className="flex flex-col gap-4 md:flex-row md:gap-6">
-            <aside className="order-2 w-full shrink-0 md:order-1 md:w-52">
-              <div className="rounded-2xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] p-3">
-                <p className="mb-3 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--at-text-tertiary)]">
-                  <Guitar className="h-3.5 w-3.5" />
-                  Tracks
-                </p>
-                <ul className="flex max-h-64 flex-col gap-1 overflow-y-auto pr-1 text-sm">
-                  {scoreRef.current?.tracks?.length ? (
-                    (scoreRef.current.tracks as AlphaTabTrack[]).map(track => {
-                      const isActive = activeTracks.has(track.index);
-                      return (
-                        <li key={track.index}>
-                          <button
-                            type="button"
-                            onClick={() => handleTrackClick(track)}
-                            className={`flex w-full items-center rounded-xl px-3 py-2 text-left transition-colors ${
-                              isActive
-                                ? "bg-[color:var(--at-track-active-bg)] text-[color:var(--at-track-active-icon)]"
-                                : "hover:bg-[color:var(--at-track-hover-bg)] text-[color:var(--at-text-secondary)]"
-                            }`}
-                          >
-                            <Guitar className={`mr-3 h-4 w-4 ${isActive ? "opacity-100" : "opacity-60"}`} />
-                            <span className="truncate text-sm font-medium">{track.name || `Track ${track.index + 1}`}</span>
-                          </button>
-                        </li>
-                      );
-                    })
-                  ) : (
-                    <li className="rounded-lg border border-dashed border-[color:var(--at-border-color)] p-3 text-xs text-[color:var(--at-text-tertiary)]">
-                      曲谱载入后可切换不同的乐器/分声部。
-                    </li>
-                  )}
-                </ul>
+          <div className="flex flex-1 overflow-hidden">
+            <aside className="hidden w-40 shrink-0 flex-col border-r border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] md:flex">
+              <div className="px-3 py-2 text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--at-text-tertiary)]">
+                Tracks
+              </div>
+              <div className="flex-1 overflow-y-auto">
+                {score?.tracks?.length ? (
+                  score.tracks.map(track => {
+                    const isActive = activeTracks.has(track.index);
+                    return (
+                      <button
+                        key={track.index}
+                        type="button"
+                        onClick={() => handleTrackClick(track.index)}
+                        className={`flex w-full items-center gap-2 px-3 py-2 text-left text-sm transition ${
+                          isActive
+                            ? "bg-[color:var(--at-track-active-bg)] text-[color:var(--at-track-active-icon)]"
+                            : "hover:bg-[color:var(--at-track-hover-bg)] text-[color:var(--at-text-secondary)]"
+                        }`}
+                      >
+                        <span className={`flex h-8 w-8 items-center justify-center ${isActive ? "text-[color:var(--at-track-active-icon)]" : "opacity-60"}`}>
+                          <Guitar size={18} />
+                        </span>
+                        <span className="truncate">
+                          {track.name || `Track ${track.index + 1}`}
+                        </span>
+                      </button>
+                    );
+                  })
+                ) : (
+                  <div className="px-3 py-4 text-xs text-[color:var(--at-text-tertiary)]">
+                    曲谱载入后可切换不同声部。
+                  </div>
+                )}
               </div>
             </aside>
 
-            <section className="order-1 flex-1 md:order-2">
-              <div
-                ref={viewportRef}
-                className="relative flex max-h-[70vh] min-h-[320px] flex-col overflow-y-auto rounded-3xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-surface, transparent)]"
-              >
-                <div ref={mainRef} className="at-main" />
+            <div className="relative flex flex-1 flex-col">
+              <div ref={viewportRef} className="flex flex-1 overflow-y-auto">
+                <div ref={mainRef} className="w-full" />
               </div>
-            </section>
+            </div>
           </div>
 
-          <div className="flex flex-col gap-3 rounded-2xl border border-[color:var(--at-border-color)] bg-[color:var(--at-control-surface)] px-3 py-2 text-[color:var(--at-control-text)]">
-            <div className="flex flex-col gap-2 text-sm text-[color:var(--at-text-tertiary)] md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-2 text-xs uppercase tracking-[0.35em] text-[color:var(--at-text-tertiary)]">
-                <span className="rounded-full bg-[color:var(--at-badge-bg)] px-3 py-1 text-[color:var(--at-badge-text)]">
-                  {isPlayerReady ? "Ready" : `Loading ${soundFontProgress}%`}
-                </span>
-                {scoreTitle && (
-                  <span className="font-medium tracking-[0.2em] text-[color:var(--at-text-secondary)]">
-                    {scoreTitle}
-                  </span>
-                )}
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--at-border-color)] bg-[color:var(--at-control-surface)] px-3 py-2 text-[color:var(--at-control-text)]">
+            <div className="flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={handleStop}
+                disabled={controlsDisabled}
+                className="flex h-10 w-10 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label="Stop"
+              >
+                <SkipBack className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={handlePlayPause}
+                disabled={controlsDisabled}
+                className="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--at-accent)] text-slate-900 transition disabled:cursor-not-allowed disabled:opacity-40"
+                aria-label={isPlaying ? "Pause" : "Play"}
+              >
+                {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
+              </button>
+              <div className="text-sm text-[color:var(--at-text-secondary)]">
+                {scoreTitle || "未命名曲谱"}
               </div>
+              {!isPlayerReady && (
+                <span className="text-xs text-[color:var(--at-text-tertiary)]">
+                  {soundFontProgress}%
+                </span>
+              )}
               <span className="font-mono text-xs text-[color:var(--at-text-secondary)]">
                 {formatDuration(songPosition.currentTime)} / {formatDuration(songPosition.endTime)}
               </span>
             </div>
 
-            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-              <div className="flex items-center gap-2 md:gap-3">
-                <button
-                  type="button"
-                  onClick={handleStop}
-                  disabled={controlsDisabled}
-                  className="flex h-10 w-10 items-center justify-center rounded-full transition disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label="Stop"
+            <div className="flex flex-wrap items-center gap-2 md:gap-3">
+              <button
+                type="button"
+                onClick={toggleCountIn}
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+                  isCountInOn ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
+                }`}
+                aria-label="Toggle count-in"
+              >
+                <Hourglass className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={toggleMetronome}
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+                  isMetronomeOn ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
+                }`}
+                aria-label="Toggle metronome"
+              >
+                <Metronome className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={toggleLoop}
+                className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
+                  isLooping ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
+                }`}
+                aria-label="Toggle loop"
+              >
+                <Repeat className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handlePrint}
+                className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[color:var(--at-track-hover-bg)]"
+                aria-label="Print score"
+              >
+                <Printer className="h-4 w-4" />
+              </button>
+              <div className="flex items-center rounded-full border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] px-2">
+                <Search className="mr-1 hidden h-4 w-4 opacity-70 lg:block" />
+                <select
+                  value={zoom}
+                  onChange={handleZoomChange}
+                  className="bg-transparent py-1 text-sm focus:outline-none"
+                  aria-label="Zoom"
                 >
-                  <SkipBack className="h-5 w-5" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePlayPause}
-                  disabled={controlsDisabled}
-                  className="flex h-12 w-12 items-center justify-center rounded-full bg-[color:var(--at-accent)] text-slate-900 transition disabled:cursor-not-allowed disabled:opacity-40"
-                  aria-label={isPlaying ? "Pause" : "Play"}
-                >
-                  {isPlaying ? <Pause className="h-6 w-6" /> : <Play className="h-6 w-6" />}
-                </button>
-                <div className="hidden text-sm text-[color:var(--at-text-secondary)] md:block">
-                  {scoreMeta?.title ?? "未命名曲谱"}
-                </div>
+                  {[25, 50, 75, 90, 100, 110, 125, 150, 200].map(level => (
+                    <option key={level} value={level}>
+                      {level}%
+                    </option>
+                  ))}
+                </select>
               </div>
-
-              <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                <button
-                  type="button"
-                  onClick={toggleCountIn}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-                    isCountInOn ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
-                  }`}
-                  aria-label="Toggle count-in"
+              <div className="flex items-center rounded-full border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] px-2">
+                <select
+                  value={layoutMode}
+                  onChange={handleLayoutChange}
+                  className="bg-transparent py-1 text-sm focus:outline-none"
+                  aria-label="Layout mode"
                 >
-                  <Hourglass className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleMetronome}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-                    isMetronomeOn ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
-                  }`}
-                  aria-label="Toggle metronome"
-                >
-                  <Metronome className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={toggleLoop}
-                  className={`flex h-10 w-10 items-center justify-center rounded-full transition ${
-                    isLooping ? "bg-[color:var(--at-control-active-bg)] text-[color:var(--at-control-active-text)]" : "hover:bg-[color:var(--at-track-hover-bg)]"
-                  }`}
-                  aria-label="Toggle loop"
-                >
-                  <Repeat className="h-4 w-4" />
-                </button>
-                <button
-                  type="button"
-                  onClick={handlePrint}
-                  className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-[color:var(--at-track-hover-bg)]"
-                  aria-label="Print score"
-                >
-                  <Printer className="h-4 w-4" />
-                </button>
-                <div className="flex items-center rounded-full border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] px-2">
-                  <Search className="mr-1 hidden h-4 w-4 opacity-70 lg:block" />
-                  <select
-                    value={zoom}
-                    onChange={handleZoomChange}
-                    className="bg-transparent py-1 text-sm focus:outline-none"
-                    aria-label="Zoom"
-                  >
-                    {[25, 50, 75, 90, 100, 110, 125, 150, 200].map(level => (
-                      <option key={level} value={level}>
-                        {level}%
-                      </option>
-                    ))}
-                  </select>
-                </div>
-                <div className="flex items-center rounded-full border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-subtle-bg)] px-2">
-                  <select
-                    value={layoutMode}
-                    onChange={handleLayoutChange}
-                    className="bg-transparent py-1 text-sm focus:outline-none"
-                    aria-label="Layout mode"
-                  >
-                    <option value="page">Page</option>
-                    <option value="horizontal">Horizontal</option>
-                  </select>
-                </div>
+                  <option value="page">Page</option>
+                  <option value="horizontal">Horizontal</option>
+                </select>
               </div>
             </div>
           </div>
         </>
       )}
 
-      {isLoading && status !== "error" && (
+      {isLoading && !error && (
         <div className="pointer-events-none absolute inset-0 z-20 flex items-start justify-center bg-[color:var(--at-overlay-bg)] pt-10 backdrop-blur-sm">
           <div className="rounded-2xl border border-[color:var(--at-border-color)] bg-[color:var(--at-overlay-content-bg)] px-6 py-4 text-sm text-[color:var(--at-overlay-text)] shadow-xl">
             乐谱载入中… {soundFontProgress ? `${soundFontProgress}%` : ""}

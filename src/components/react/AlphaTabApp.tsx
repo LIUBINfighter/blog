@@ -53,18 +53,24 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
 
   const [source, setSource] = useState<AlphaTabSource>(deriveInitialSource);
   const [sourceLabel, setSourceLabel] = useState<string>(initialSource?.label ?? DEFAULT_LABEL);
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
-    if (typeof document === "undefined") return false;
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+
+  useEffect(() => {
+    if (typeof document === "undefined") return;
     const stored = localStorage.getItem("theme");
-    if (stored) {
-      return stored === "dark";
-    }
-    return document.documentElement.getAttribute("data-theme") === "dark";
-  });
+    const resolved = stored
+      ? stored === "dark"
+      : document.documentElement.getAttribute("data-theme") === "dark";
+    setIsDarkMode(resolved);
+  }, []);
 
   useEffect(() => {
     ensureThemeSync(isDarkMode);
   }, [isDarkMode]);
+
+  const handleThemeToggle = useCallback(() => {
+    setIsDarkMode(prev => !prev);
+  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -75,12 +81,16 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
         themeButton.click();
         return;
       }
-
-      const next = !isDarkMode;
-      ensureThemeSync(next);
-      setIsDarkMode(next);
+      handleThemeToggle();
     };
-  }, [isDarkMode]);
+
+    return () => {
+      if (window.toggleTheme === undefined) return;
+      if (window.toggleTheme === handleThemeToggle) {
+        window.toggleTheme = undefined;
+      }
+    };
+  }, [handleThemeToggle]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -127,7 +137,7 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
 
   return (
     <div className={`flex flex-col gap-6 ${className ?? ""}`}>
-      <style>{`
+      <style suppressHydrationWarning>{`
         :root {
           --at-panel-bg: rgba(241, 245, 249, 0.92);
           --at-panel-surface: rgba(248, 250, 252, 0.92);
@@ -150,7 +160,7 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
           --at-badge-text: #1d4ed8;
           --at-accent: #38bdf8;
         }
-        html.dark, [data-theme="dark"] {
+  html.dark, [data-theme='dark'] {
           --at-panel-bg: rgba(15, 23, 42, 0.8);
           --at-panel-surface: rgba(17, 24, 39, 0.82);
           --at-panel-subtle-bg: rgba(30, 41, 59, 0.75);
@@ -197,8 +207,9 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
               </label>
             )}
             <button
+              id="theme-btn"
               type="button"
-              onClick={() => window.toggleTheme?.()}
+              onClick={handleThemeToggle}
               className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-[color:var(--at-panel-subtle-bg)] text-[color:var(--at-text-primary)] transition hover:opacity-90"
               aria-label="Toggle theme"
             >
