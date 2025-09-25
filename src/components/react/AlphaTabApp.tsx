@@ -136,57 +136,57 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
   }, [source, sourceLabel]);
 
   return (
-    <div className={`flex flex-col gap-6 ${className ?? ""}`}>
+    <div className={`flex flex-col gap-8 ${className ?? ""}`}>
       <style suppressHydrationWarning>{`
         :root {
-          --at-panel-bg: rgba(241, 245, 249, 0.92);
-          --at-panel-surface: rgba(248, 250, 252, 0.92);
-          --at-panel-subtle-bg: rgba(148, 163, 184, 0.08);
-          --at-border-color: rgba(15, 23, 42, 0.12);
-          --at-text-primary: #0f172a;
-          --at-text-secondary: #1e293b;
-          --at-text-tertiary: #475569;
-          --at-control-surface: rgba(15, 23, 42, 0.08);
-          --at-control-text: #0f172a;
-          --at-control-active-bg: rgba(59, 130, 246, 0.25);
-          --at-control-active-text: #0f172a;
-          --at-track-active-bg: rgba(59, 130, 246, 0.14);
-          --at-track-hover-bg: rgba(15, 23, 42, 0.08);
-          --at-track-active-icon: #1d4ed8;
-          --at-overlay-bg: rgba(15, 23, 42, 0.55);
-          --at-overlay-content-bg: rgba(15, 23, 42, 0.92);
-          --at-overlay-text: #f8fafc;
-          --at-badge-bg: rgba(59, 130, 246, 0.15);
-          --at-badge-text: #1d4ed8;
-          --at-accent: #38bdf8;
+          --at-panel-bg: color-mix(in srgb, var(--surface) 92%, transparent);
+          --at-panel-surface: var(--surface-strong);
+          --at-panel-subtle-bg: color-mix(in srgb, var(--surface-subtle) 100%, transparent);
+          --at-border-color: color-mix(in srgb, var(--border) 78%, transparent);
+          --at-text-primary: var(--text-primary);
+          --at-text-secondary: var(--text-secondary);
+          --at-text-tertiary: var(--text-tertiary);
+          --at-control-surface: var(--control-surface);
+          --at-control-text: var(--control-text);
+          --at-control-active-bg: var(--control-active-bg);
+          --at-control-active-text: var(--control-active-text);
+          --at-track-active-bg: var(--track-active-bg);
+          --at-track-hover-bg: var(--track-hover-bg);
+          --at-track-active-icon: var(--track-active-icon);
+          --at-overlay-bg: var(--overlay-bg);
+          --at-overlay-content-bg: var(--overlay-content-bg);
+          --at-overlay-text: var(--overlay-text);
+          --at-badge-bg: var(--badge-bg);
+          --at-badge-text: var(--badge-text);
+          --at-accent: var(--accent-strong);
         }
-  html.dark, [data-theme='dark'] {
-          --at-panel-bg: rgba(15, 23, 42, 0.8);
-          --at-panel-surface: rgba(17, 24, 39, 0.82);
-          --at-panel-subtle-bg: rgba(30, 41, 59, 0.75);
-          --at-border-color: rgba(148, 163, 184, 0.25);
-          --at-text-primary: #e2e8f0;
-          --at-text-secondary: #cbd5f5;
-          --at-text-tertiary: #94a3b8;
-          --at-control-surface: rgba(30, 41, 59, 0.82);
-          --at-control-text: #e2e8f0;
-          --at-control-active-bg: rgba(96, 165, 250, 0.32);
-          --at-control-active-text: #0f172a;
-          --at-track-active-bg: rgba(96, 165, 250, 0.22);
-          --at-track-hover-bg: rgba(148, 163, 184, 0.16);
-          --at-track-active-icon: #bfdbfe;
-          --at-overlay-bg: rgba(15, 23, 42, 0.7);
-          --at-overlay-content-bg: rgba(30, 41, 59, 0.95);
-          --at-overlay-text: #f8fafc;
-          --at-badge-bg: rgba(96, 165, 250, 0.25);
-          --at-badge-text: #bfdbfe;
-          --at-accent: #60a5fa;
+        html.dark, [data-theme='dark'] {
+          --at-panel-bg: color-mix(in srgb, var(--surface) 94%, transparent);
+          --at-panel-surface: var(--surface-strong);
+          --at-panel-subtle-bg: color-mix(in srgb, var(--surface-subtle) 100%, transparent);
+          --at-border-color: color-mix(in srgb, var(--border) 82%, transparent);
+          --at-text-primary: var(--text-primary);
+          --at-text-secondary: var(--text-secondary);
+          --at-text-tertiary: var(--text-tertiary);
+          --at-control-surface: var(--control-surface);
+          --at-control-text: var(--control-text);
+          --at-control-active-bg: var(--control-active-bg);
+          --at-control-active-text: var(--control-active-text);
+          --at-track-active-bg: var(--track-active-bg);
+          --at-track-hover-bg: var(--track-hover-bg);
+          --at-track-active-icon: var(--track-active-icon);
+          --at-overlay-bg: var(--overlay-bg);
+          --at-overlay-content-bg: var(--overlay-content-bg);
+          --at-overlay-text: var(--overlay-text);
+          --at-badge-bg: var(--badge-bg);
+          --at-badge-text: var(--badge-text);
+          --at-accent: var(--accent-strong);
         }
       `}</style>
 
-      <header className="rounded-3xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)] p-6 backdrop-blur">
+      <header className="rounded-[2.5rem] border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)]/95 px-8 py-7 shadow-[0_28px_70px_-45px_color-mix(in_srgb,var(--border)_85%,transparent)] backdrop-blur-xl transition-colors">
         <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-          <div className="space-y-2">
+          <div className="space-y-3">
             <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[color:var(--at-text-tertiary)]">
               alphaTab Toolkit
             </p>
@@ -217,7 +217,7 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
             </button>
           </div>
         </div>
-        <div className="mt-4 inline-flex items-center gap-2 rounded-full bg-[color:var(--at-panel-subtle-bg)] px-4 py-2 text-xs uppercase tracking-[0.2em] text-[color:var(--at-text-tertiary)]">
+  <div className="mt-6 inline-flex items-center gap-2 rounded-full bg-[color:var(--at-panel-subtle-bg)]/90 px-5 py-2.5 text-[0.7rem] uppercase tracking-[0.24em] text-[color:var(--at-text-tertiary)]">
           <FileMusic className="h-4 w-4" />
           <span className="font-semibold text-[color:var(--at-text-secondary)]">{displayName}</span>
         </div>

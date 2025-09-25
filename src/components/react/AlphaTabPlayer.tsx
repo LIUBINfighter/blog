@@ -144,12 +144,64 @@ const loadAlphaTabRuntime = () => {
   return alphaTabLoader;
 };
 
+const resolveThemeColor = (cssVar: string, fallback: string) => {
+  if (typeof window === "undefined") {
+    return fallback;
+  }
+
+  const root = document.documentElement;
+  const host = document.body ?? root;
+  const probe = document.createElement("span");
+  probe.style.position = "absolute";
+  probe.style.width = "0";
+  probe.style.height = "0";
+  probe.style.opacity = "0";
+  probe.style.pointerEvents = "none";
+  probe.style.color = `var(${cssVar})`;
+  host.appendChild(probe);
+
+  const computed = getComputedStyle(probe).color || "";
+  probe.remove();
+
+  if (!computed) {
+    return fallback;
+  }
+
+  // Normalize to rgba/hex acceptable by alphaTab
+  const rgbMatch = computed.match(/rgba?\(([^)]+)\)/i);
+  if (!rgbMatch) {
+    return computed;
+  }
+
+  const [rStr, gStr, bStr] = rgbMatch[1]
+    .split(/\s*,\s*/)
+    .map(channel => channel.trim());
+
+  const r = Number.parseFloat(rStr);
+  const g = Number.parseFloat(gStr);
+  const b = Number.parseFloat(bStr);
+
+  if ([r, g, b].some(channel => Number.isNaN(channel))) {
+    return fallback;
+  }
+
+  const toHex = (value: number) => {
+    const clamped = Math.max(0, Math.min(255, Math.round(value)));
+    return clamped.toString(16).padStart(2, "0");
+  };
+
+  return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+};
+
 const applyScoreColors = (scoreToColor: AlphaTabScore | null, darkMode: boolean) => {
   const alphaTab = window.alphaTab;
   if (!alphaTab || !scoreToColor) return;
 
   const { model } = alphaTab;
   if (!model) return;
+
+  const primaryTone = resolveThemeColor("--text-secondary", "#d1d5db");
+  const secondaryTone = resolveThemeColor("--text-tertiary", "#9ca3af");
 
   const resetColors = (score: AlphaTabScore) => {
     score.style = null;
@@ -177,8 +229,8 @@ const applyScoreColors = (scoreToColor: AlphaTabScore | null, darkMode: boolean)
     return;
   }
 
-  const darkColor = model.Color.fromJson("#d1d5db");
-  const secondaryDarkColor = model.Color.fromJson("#9ca3af");
+  const darkColor = model.Color.fromJson(primaryTone);
+  const secondaryDarkColor = model.Color.fromJson(secondaryTone);
 
   scoreToColor.style = new model.ScoreStyle();
   const scoreStyle = scoreToColor.style;
@@ -680,13 +732,13 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
       ref={containerRef}
       data-alphatab-root
       data-theme={isDarkMode ? "dark" : "light"}
-      className={`relative flex w-full flex-col overflow-hidden rounded-3xl border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)] shadow-xl shadow-slate-900/10 backdrop-blur ${
+      className={`relative flex w-full flex-col overflow-hidden rounded-[2.5rem] border border-[color:var(--at-border-color)] bg-[color:var(--at-panel-bg)]/95 shadow-[0_32px_72px_-48px_color-mix(in_srgb,var(--border)_80%,transparent)] backdrop-blur-xl ${
         className ?? ""
       }`}
     >
       <style suppressHydrationWarning>{`
         [data-alphatab-root] .at-cursor-bar {
-          background: rgba(255, 242, 0, 0.25) !important;
+          background: color-mix(in srgb, var(--at-accent) 28%, transparent) !important;
         }
         [data-alphatab-root] .at-selection div {
           background: color-mix(in srgb, var(--at-accent) 20%, transparent) !important;
@@ -696,7 +748,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
           width: 3px !important;
         }
         [data-alphatab-root][data-theme='dark'] .at-cursor-bar {
-          background: color-mix(in srgb, var(--at-accent) 35%, transparent) !important;
+          background: color-mix(in srgb, var(--at-accent) 36%, transparent) !important;
         }
         [data-alphatab-root][data-theme='dark'] .at-selection div {
           background: color-mix(in srgb, var(--at-accent) 24%, transparent) !important;
@@ -728,7 +780,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:var(--at-border-color)] bg-[color:var(--at-control-surface)] px-3 py-2 text-[color:var(--at-control-text)]">
+          <div className="flex flex-wrap items-center justify-between gap-4 border-t border-[color:var(--at-border-color)] bg-[color:var(--at-control-surface)] px-4 py-3 text-[color:var(--at-control-text)]">
             <div className="flex flex-wrap items-center gap-3">
               {/* Tracks button (will open modal in next step) */}
               <button
