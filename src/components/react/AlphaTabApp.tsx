@@ -58,7 +58,12 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
   const [sourceLabel, setSourceLabel] = useState<string>(
     initialSource?.label ?? DEFAULT_LABEL
   );
-  const [isDarkMode, setIsDarkMode] = useState<boolean>(false);
+  const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
+    if (typeof document === "undefined") return false;
+    const stored = localStorage.getItem("theme");
+    if (stored) return stored === "dark";
+    return document.documentElement.getAttribute("data-theme") === "dark";
+  });
 
   useEffect(() => {
     if (typeof document === "undefined") return;
