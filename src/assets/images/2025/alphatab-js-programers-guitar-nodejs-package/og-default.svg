@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title desc">
+  <title id="title">alphaTab.js Blog Post Placeholder</title>
+  <desc id="desc">Placeholder open graph cover for the alphaTab.js integration article.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a" />
+      <stop offset="100%" stop-color="#1f2937" />
+    </linearGradient>
+    <linearGradient id="accent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#38bdf8" />
+      <stop offset="100%" stop-color="#a855f7" />
+    </linearGradient>
+    <style>
+      text { font-family: "JetBrains Mono", "Fira Code", Menlo, Monaco, "Courier New", monospace; }
+    </style>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)" />
+  <g transform="translate(80, 120)">
+    <rect x="0" y="0" width="1040" height="420" rx="32" fill="#111827" opacity="0.6" />
+    <text x="40" y="120" font-size="64" fill="#f8fafc" font-weight="700">alphaTab.js</text>
+    <text x="40" y="200" font-size="48" fill="url(#accent)">Programmer's Guitar Toolkit</text>
+    <text x="40" y="280" font-size="32" fill="#e2e8f0">React · Astro · Node.js</text>
+    <text x="40" y="360" font-size="24" fill="#94a3b8">Hands-on integration walkthrough</text>
+  </g>
+  <path d="M1080 110 L900 170" stroke="url(#accent)" stroke-width="4" stroke-linecap="round" opacity="0.8" />
+  <path d="M1080 210 L900 270" stroke="url(#accent)" stroke-width="4" stroke-linecap="round" opacity="0.6" />
+  <path d="M1080 310 L900 370" stroke="url(#accent)" stroke-width="4" stroke-linecap="round" opacity="0.4" />
+</svg>

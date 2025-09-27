@@ -10,6 +10,34 @@ html[data-theme="light"] {
   --accent: #6fa774; /* 草地的绿色，充满活力 */
   --muted: #dde6e2; /* 带有极淡绿色的灰色 */
   --border: #cbd7d2; /* 边框色 */
+
+  /* derived surfaces & text tokens */
+  --surface: #f7f9f8;
+  --surface-strong: #eef3f1;
+  --surface-subtle: rgba(221, 230, 226, 0.2);
+  --text-primary: var(--foreground);
+  --text-secondary: #4a6b6a;
+  --text-tertiary: #5f7f7e;
+
+  /* interactive tokens */
+  --control-surface: rgba(51, 82, 82, 0.08);
+  --control-text: var(--foreground);
+  --control-active-bg: rgba(111, 167, 116, 0.32);
+  --control-active-text: var(--foreground);
+  --track-active-bg: rgba(111, 167, 116, 0.18);
+  --track-hover-bg: rgba(51, 82, 82, 0.12);
+  --track-active-icon: #5ca786;
+
+  /* overlays & badges */
+  --overlay-bg: rgba(0, 0, 0, 0.55);
+  --overlay-content-bg: rgba(243, 246, 246, 0.94);
+  --overlay-text: #1b3138;
+  --badge-bg: rgba(111, 167, 116, 0.22);
+  --badge-text: #3f6c62;
+
+  /* accent variants */
+  --accent-strong: #609f69;
+  --accent-soft: rgba(111, 167, 116, 0.38);
 }
 
 html[data-theme="dark"] {
@@ -18,6 +46,30 @@ html[data-theme="dark"] {
   --accent: #d7b8cc; /* 天边的柔和粉紫色，作为点缀，非常别致 */
   --muted: #4c6973; /* 中等色调的蓝色山体 */
   --border: #5a7b85; /* 边框色 */
+
+  --surface: #15262c;
+  --surface-strong: #132227;
+  --surface-subtle: rgba(76, 105, 115, 0.28);
+  --text-primary: var(--foreground);
+  --text-secondary: #c7d4d2;
+  --text-tertiary: #95a7a4;
+
+  --control-surface: rgba(234, 243, 241, 0.12);
+  --control-text: var(--foreground);
+  --control-active-bg: rgba(215, 184, 204, 0.34);
+  --control-active-text: #1b3138;
+  --track-active-bg: rgba(215, 184, 204, 0.24);
+  --track-hover-bg: rgba(90, 123, 133, 0.24);
+  --track-active-icon: #dfc6da;
+
+  --overlay-bg: rgba(0, 0, 0, 0.7);
+  --overlay-content-bg: rgba(27, 49, 56, 0.92);
+  --overlay-text: #eaf3f1;
+  --badge-bg: rgba(215, 184, 204, 0.3);
+  --badge-text: #e0ccdc;
+
+  --accent-strong: #c49eba;
+  --accent-soft: rgba(215, 184, 204, 0.36);
 }
 
 @theme inline {
