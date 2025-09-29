@@ -29,6 +29,7 @@ const ensureThemeSync = (isDark: boolean) => {
 type InitialSourceDescriptor = AlphaTabSource & { label?: string };
 
 interface AlphaTabAppProps {
+
   /**
    * initialSource 支持：
    * 1) 直接给 AlphaTabSource 对象 (向后兼容)
@@ -95,6 +96,7 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
       if (typeof initialSource === 'string') {
         return detectStringSource(initialSource);
       }
+
       const { label: _label, ...rest } = initialSource;
       void _label;
       return rest as AlphaTabSource;
@@ -103,10 +105,12 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
   }, [initialSource]);
 
   const [source, setSource] = useState<AlphaTabSource>(deriveInitialSource);
+
   const [sourceLabel, setSourceLabel] = useState<string>(() => {
     if (typeof initialSource === 'string') return 'Inline Source';
     return (initialSource as InitialSourceDescriptor)?.label ?? DEFAULT_LABEL;
   });
+
   const [isDarkMode, setIsDarkMode] = useState<boolean>(() => {
     if (typeof document === "undefined") return false;
     const stored = localStorage.getItem("theme");
@@ -184,17 +188,21 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
 
   const displayName = useMemo(() => {
     if (sourceLabel) return sourceLabel;
+
     if (source.type === 'url') {
       try {
         const url = new URL(source.value);
         return decodeURIComponent(url.pathname.split('/').pop() || DEFAULT_LABEL);
+
       } catch {
         return source.value;
       }
     }
+
     if (source.type === 'alphaTex') return 'AlphaTex snippet';
     if (source.type === 'arrayBuffer') return 'ArrayBuffer score';
     if (source.type === 'file') return source.value.name;
+
     return DEFAULT_LABEL;
   }, [source, sourceLabel]);
 
@@ -309,6 +317,7 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
         isDarkMode={isDarkMode}
         soundFontUrl={soundFontUrl}
         forceAlphaTex={forceAlphaTex}
+
       />
     </div>
   );

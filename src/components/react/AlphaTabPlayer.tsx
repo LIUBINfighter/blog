@@ -400,6 +400,7 @@ type AlphaTabPlayerProps = {
    * 而是先 fetch 文本并尝试使用 loadAlphaTex 解析（失败再回退）。
    */
   forceAlphaTex?: boolean;
+
 };
 
 const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
