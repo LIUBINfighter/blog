@@ -29,7 +29,6 @@ const ensureThemeSync = (isDark: boolean) => {
 type InitialSourceDescriptor = AlphaTabSource & { label?: string };
 
 interface AlphaTabAppProps {
-
   /**
    * initialSource 支持：
    * 1) 直接给 AlphaTabSource 对象 (向后兼容)
@@ -53,47 +52,48 @@ const detectStringSource = (raw: string): AlphaTabSource => {
 
   // 1. 显式 URL
   if (/^https?:\/\//i.test(trimmed)) {
-    return { type: 'url', value: trimmed };
+    return { type: "url", value: trimmed };
   }
 
   // 2. 显式前缀 AT:
-  if (trimmed.startsWith('AT:')) {
-    return { type: 'alphaTex', value: trimmed.slice(3).trim() };
+  if (trimmed.startsWith("AT:")) {
+    return { type: "alphaTex", value: trimmed.slice(3).trim() };
   }
 
   // 3. 文件扩展名 .alphatex / .atx (未来可拓展)
   if (/\.(alphatex|atx)$/i.test(trimmed)) {
-    return { type: 'alphaTex', value: trimmed };
+    return { type: "alphaTex", value: trimmed };
   }
 
   // 4. 多行并含有典型 alphaTex 指令或和弦/节拍/音轨声明
   const hasNewline = /\n/.test(trimmed);
-  const alphaTexDirectivePattern = /(^|\n)\\(title|tempo|ts|track|chord|tuning|instrument|version)\b/i;
+  const alphaTexDirectivePattern =
+    /(^|\n)\\(title|tempo|ts|track|chord|tuning|instrument|version)\b/i;
   if (hasNewline && alphaTexDirectivePattern.test(trimmed)) {
-    return { type: 'alphaTex', value: trimmed };
+    return { type: "alphaTex", value: trimmed };
   }
 
   // 5. 以常见指令开头（即使单行）
   if (/^\\(title|tempo|ts|track|chord)\b/i.test(trimmed)) {
-    return { type: 'alphaTex', value: trimmed };
+    return { type: "alphaTex", value: trimmed };
   }
 
   // 6. 安全回退：仍视作 URL （用户真想加载某个路径时）
-  return { type: 'url', value: trimmed };
+  return { type: "url", value: trimmed };
 };
 
 const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
   initialSource,
   allowUpload = true,
-  heading = 'React Player Integration',
-  description = 'Load Guitar Pro files directly in Astro via a React client island.',
+  heading = "React Player Integration",
+  description = "Load Guitar Pro files directly in Astro via a React client island.",
   soundFontUrl,
   className,
   forceAlphaTex = false,
 }) => {
   const deriveInitialSource = useCallback((): AlphaTabSource => {
     if (initialSource) {
-      if (typeof initialSource === 'string') {
+      if (typeof initialSource === "string") {
         return detectStringSource(initialSource);
       }
 
@@ -107,7 +107,7 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
   const [source, setSource] = useState<AlphaTabSource>(deriveInitialSource);
 
   const [sourceLabel, setSourceLabel] = useState<string>(() => {
-    if (typeof initialSource === 'string') return 'Inline Source';
+    if (typeof initialSource === "string") return "Inline Source";
     return (initialSource as InitialSourceDescriptor)?.label ?? DEFAULT_LABEL;
   });
 
@@ -189,19 +189,20 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
   const displayName = useMemo(() => {
     if (sourceLabel) return sourceLabel;
 
-    if (source.type === 'url') {
+    if (source.type === "url") {
       try {
         const url = new URL(source.value);
-        return decodeURIComponent(url.pathname.split('/').pop() || DEFAULT_LABEL);
-
+        return decodeURIComponent(
+          url.pathname.split("/").pop() || DEFAULT_LABEL
+        );
       } catch {
         return source.value;
       }
     }
 
-    if (source.type === 'alphaTex') return 'AlphaTex snippet';
-    if (source.type === 'arrayBuffer') return 'ArrayBuffer score';
-    if (source.type === 'file') return source.value.name;
+    if (source.type === "alphaTex") return "AlphaTex snippet";
+    if (source.type === "arrayBuffer") return "ArrayBuffer score";
+    if (source.type === "file") return source.value.name;
 
     return DEFAULT_LABEL;
   }, [source, sourceLabel]);
@@ -317,7 +318,6 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
         isDarkMode={isDarkMode}
         soundFontUrl={soundFontUrl}
         forceAlphaTex={forceAlphaTex}
-
       />
     </div>
   );
