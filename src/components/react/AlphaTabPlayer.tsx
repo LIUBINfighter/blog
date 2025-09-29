@@ -507,7 +507,8 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
               pendingAlphaTexRef.current = descriptor.value;
               setReinitKey(k => k + 1);
             }
-            break; }
+            break;
+          }
           default:
             break;
         }
@@ -566,9 +567,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
             layoutMode: alphaTab.LayoutMode?.Page,
             stretchForce: 0.9,
           },
-          ...(texFallback
-            ? { core: { tex: true } }
-            : {}),
+          ...(texFallback ? { core: { tex: true } } : {}),
         }) as AlphaTabApiInstance;
 
         apiRef.current = api;
@@ -646,9 +645,9 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         );
 
         if (texFallback) {
-            // 已由 core.tex 自动解析，清除标记
-            pendingAlphaTexRef.current = null;
-            setIsLoading(false); // 等待事件也可；这里保持与 renderStarted 逻辑一致
+          // 已由 core.tex 自动解析，清除标记
+          pendingAlphaTexRef.current = null;
+          setIsLoading(false); // 等待事件也可；这里保持与 renderStarted 逻辑一致
         } else {
           void loadSource(source, api).catch(err => {
             setError(err instanceof Error ? err.message : String(err));

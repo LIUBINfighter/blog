@@ -21,15 +21,24 @@ import rawScore from "@/data/scores/demo-piece.alphatex?raw";
 
 ### 1. 极简 Inline AlphaTex 播放
 
-<AlphaTabSimplePlayer client:only="react" source={{ type: 'alphaTex', value: rawScore }} />
+<AlphaTabSimplePlayer
+  client:only="react"
+  source={{ type: "alphaTex", value: rawScore }}
+/>
 
 说明：`AlphaTabSimplePlayer` 提供最小封装 —— 自动加载运行时、判别 alphaTex、渲染乐谱。没有控制栏 / 轨道 / 主题切换，适合文章中**内联片段**与**纯展示**。
 
 ### 2. 完整功能播放器（同一份 alphaTex）
 
-<AlphaTabApp client:only="react" initialSource={rawScore} heading="Full Player (AlphaTex)" description="完整功能播放器对同一段 alphaTex 的加载" />
+<AlphaTabApp
+  client:only="react"
+  initialSource={rawScore}
+  heading="Full Player (AlphaTex)"
+  description="完整功能播放器对同一段 alphaTex 的加载"
+/>
 
 说明：`AlphaTabApp` 内部使用 `AlphaTabPlayer`，带有：
+
 - 主题同步（暗/亮模式）
 - 文件上传（Guitar Pro 系列）
 - 播放 / 暂停 / 停止 / 循环 / 轨道选择 / 打印
@@ -40,18 +49,18 @@ import rawScore from "@/data/scores/demo-piece.alphatex?raw";
 
 ## 🧩 两个组件差异一览
 
-| 能力 | AlphaTabSimplePlayer | AlphaTabApp / AlphaTabPlayer |
-| ---- | -------------------- | ----------------------------- |
-| 运行时动态加载 | ✅ | ✅ |
-| 加载来源 (url/file/arrayBuffer/alphaTex) | ✅ | ✅ |
-| 自动判别字符串为 alphaTex | ✅ | ✅ (由外层 `initialSource` 传入) |
-| 主题暗/亮联动 | ❌（继承外部，仅样式对齐） | ✅ |
-| 播放控制（循环、节拍器、Count-In） | ❌ | ✅ |
-| 轨道选择对话框 | ❌ | ✅ |
-| 缩放 / 布局切换 | ❌ | ✅ |
-| 打印支持 | ❌ | ✅ |
-| 自定义色彩渲染 (深色谱面再着色) | ❌ | ✅ |
-| 体积 / 复杂度 | 极简 | 完整 |
+| 能力                                     | AlphaTabSimplePlayer       | AlphaTabApp / AlphaTabPlayer     |
+| ---------------------------------------- | -------------------------- | -------------------------------- |
+| 运行时动态加载                           | ✅                         | ✅                               |
+| 加载来源 (url/file/arrayBuffer/alphaTex) | ✅                         | ✅                               |
+| 自动判别字符串为 alphaTex                | ✅                         | ✅ (由外层 `initialSource` 传入) |
+| 主题暗/亮联动                            | ❌（继承外部，仅样式对齐） | ✅                               |
+| 播放控制（循环、节拍器、Count-In）       | ❌                         | ✅                               |
+| 轨道选择对话框                           | ❌                         | ✅                               |
+| 缩放 / 布局切换                          | ❌                         | ✅                               |
+| 打印支持                                 | ❌                         | ✅                               |
+| 自定义色彩渲染 (深色谱面再着色)          | ❌                         | ✅                               |
+| 体积 / 复杂度                            | 极简                       | 完整                             |
 
 > 建议：**文章内短乐句 / 教学片段 → Simple**；**交互体验 / 功能演示 / 需要轨道控制 → Full Player**。
 
@@ -60,6 +69,7 @@ import rawScore from "@/data/scores/demo-piece.alphatex?raw";
 ## 🏗️ Inline AlphaTex 检测逻辑概述
 
 核心思路：
+
 1. 若字符串匹配 `^https?://` → 视为 URL
 2. 若含典型指令（如 `\\title`、`\\tempo`、`\\track`、`\\ts` 等）或多行结构 → 判定为 alphaTex
 3. 其它回退为 URL（便于远程文件加载）
@@ -71,6 +81,7 @@ import rawScore from "@/data/scores/demo-piece.alphatex?raw";
 ## ⚙️ 完整播放器加载回退细节
 
 `AlphaTabPlayer` 里：
+
 - 优先 `api.loadAlphaTex(text)`
 - 否则：`pendingAlphaTexRef` 存文本 → 触发 `reinitKey` → 重建实例并设置 `core: { tex: true }`
 - 重建前把 `mainRef.textContent = text`，alphaTab 初始化时会解析容器内部内容
@@ -82,37 +93,48 @@ import rawScore from "@/data/scores/demo-piece.alphatex?raw";
 ## 🚀 快速使用示例
 
 ### 极简：直接内联
+
 ```tsx
-import AlphaTabSimplePlayer from '@/components/react/AlphaTabSimplePlayer';
+import AlphaTabSimplePlayer from "@/components/react/AlphaTabSimplePlayer";
 
 const tex = `\\title "Demo" . 3.3 5.3 7.3 8.3 | 3.3*4`;
-<AlphaTabSimplePlayer source={{ type: 'alphaTex', value: tex }} />;
+<AlphaTabSimplePlayer source={{ type: "alphaTex", value: tex }} />;
 ```
 
 ### 字符串自动判别
+
 ```tsx
-<AlphaTabSimplePlayer source={'\\tempo 120\n.\n3.3 5.3 7.3 8.3'} />
+<AlphaTabSimplePlayer source={"\\tempo 120\n.\n3.3 5.3 7.3 8.3"} />
 ```
 
 ### 完整播放器 + alphaTex
+
 ```tsx
 <AlphaTabApp initialSource={'\\title "Quick" . 3.3*4'} />
 ```
 
 ### 完整播放器 + Guitar Pro 文件
+
 ```tsx
-<AlphaTabApp initialSource={{ type: 'url', value: 'https://www.alphatab.net/files/canon.gp', label: 'Canon Demo' }} />
+<AlphaTabApp
+  initialSource={{
+    type: "url",
+    value: "https://www.alphatab.net/files/canon.gp",
+    label: "Canon Demo",
+  }}
+/>
 ```
 
 ---
 
 ## 🧪 典型问题排查
-| 现象 | 可能原因 | 解决 |
-| ---- | -------- | ---- |
-| 404 (Requested URL not found) | alphaTex 文本被当作 URL | 确认传入 `type: 'alphaTex'` 或包含指令；利用回退机制 |
-| 空白无渲染 | runtime 未加载或脚本被阻止 | 检查网络 / CSP；确保未多次提前卸载 | 
-| 深色模式颜色过浅 | 未应用 score recolor | 使用 Full Player 或扩展 Simple 组件颜色逻辑 |
-| 轨道选择无效 | 仅 Simple 组件 | 改用 Full Player |
+
+| 现象                          | 可能原因                   | 解决                                                 |
+| ----------------------------- | -------------------------- | ---------------------------------------------------- |
+| 404 (Requested URL not found) | alphaTex 文本被当作 URL    | 确认传入 `type: 'alphaTex'` 或包含指令；利用回退机制 |
+| 空白无渲染                    | runtime 未加载或脚本被阻止 | 检查网络 / CSP；确保未多次提前卸载                   |
+| 深色模式颜色过浅              | 未应用 score recolor       | 使用 Full Player 或扩展 Simple 组件颜色逻辑          |
+| 轨道选择无效                  | 仅 Simple 组件             | 改用 Full Player                                     |
 
 ---
 
@@ -128,6 +150,7 @@ const tex = `\\title "Demo" . 3.3 5.3 7.3 8.3 | 3.3*4`;
 ---
 
 ## 🧵 后续可扩展方向
+
 - 自定义 Track 列表 UI：提取当前高级组件逻辑到独立 hook
 - 选择性打包：将 Simple 组件逻辑 + 懒加载封装成一个 NPM 包以便复用
 - AlphaTex 片段高亮：结合代码高亮器（Rehype 插件）将谱面与渲染结果并排
@@ -136,6 +159,7 @@ const tex = `\\title "Demo" . 3.3 5.3 7.3 8.3 | 3.3*4`;
 ---
 
 ## ✅ 总结
+
 - Simple：最少依赖、内联演示首选
 - Full：交互完整、主题 / 轨道 / 播放控制齐全
 - 两者共享：统一的 alphaTex 判别策略 + CDN 运行时加载

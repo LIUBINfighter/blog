@@ -3,7 +3,9 @@ import { FileMusic, Moon, Sun, UploadCloud } from "lucide-react";
 import AlphaTabPlayer from "./AlphaTabPlayer";
 import type { AlphaTabSource } from "./AlphaTabPlayer";
 // 引入极简版本以便对比/调试 alphaTex 直接加载
-import AlphaTabSimplePlayer, { type SimpleAlphaTabSource } from "./AlphaTabSimplePlayer";
+import AlphaTabSimplePlayer, {
+  type SimpleAlphaTabSource,
+} from "./AlphaTabSimplePlayer";
 
 declare global {
   interface Window {
@@ -326,9 +328,9 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
       ) : (
         <AlphaTabPlayer
           source={source}
-            isDarkMode={isDarkMode}
-            soundFontUrl={soundFontUrl}
-            forceAlphaTex={forceAlphaTex}
+          isDarkMode={isDarkMode}
+          soundFontUrl={soundFontUrl}
+          forceAlphaTex={forceAlphaTex}
         />
       )}
     </div>

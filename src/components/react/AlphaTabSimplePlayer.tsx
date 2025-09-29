@@ -25,11 +25,19 @@ interface MinimalAlphaTabApi {
   loadAlphaTex?: (tex: string) => void;
   render?: () => void;
   destroy?: () => void;
-  playerReady?: { on: (fn: () => void) => void; off?: (fn: () => void) => void };
-  renderFinished?: { on: (fn: () => void) => void; off?: (fn: () => void) => void };
-  scoreLoaded?: { on: (fn: () => void) => void; off?: (fn: () => void) => void };
+  playerReady?: {
+    on: (fn: () => void) => void;
+    off?: (fn: () => void) => void;
+  };
+  renderFinished?: {
+    on: (fn: () => void) => void;
+    off?: (fn: () => void) => void;
+  };
+  scoreLoaded?: {
+    on: (fn: () => void) => void;
+    off?: (fn: () => void) => void;
+  };
 }
-
 
 interface AlphaTabSimplePlayerProps {
   source: SimpleAlphaTabSource | string; // 传 string 自动判别 url / alphaTex
@@ -59,14 +67,20 @@ function ensureRuntime(autoLoad: boolean): Promise<void> {
   if (!autoLoad) {
     return window.alphaTab
       ? Promise.resolve()
-      : Promise.reject(new Error("alphaTab 运行时未注入且 autoLoadScript=false"));
+      : Promise.reject(
+          new Error("alphaTab 运行时未注入且 autoLoadScript=false")
+        );
   }
   if (!runtimePromise) {
     runtimePromise = new Promise((resolve, reject) => {
       const existing = document.querySelector(`script[src='${ALPHATAB_CDN}']`);
       if (existing) {
         existing.addEventListener("load", () => resolve(), { once: true });
-        existing.addEventListener("error", () => reject(new Error("alphaTab 脚本加载失败")), { once: true });
+        existing.addEventListener(
+          "error",
+          () => reject(new Error("alphaTab 脚本加载失败")),
+          { once: true }
+        );
         return;
       }
       const s = document.createElement("script");
@@ -87,7 +101,8 @@ function detectStringSource(raw: string): SimpleAlphaTabSource {
   if (/^https?:\/\//i.test(trimmed)) {
     return { type: "url", value: trimmed };
   }
-  const directives = /(^|\n)\\(title|tempo|track|staff|instrument|ts|articulation|multiBarRest)\b/i;
+  const directives =
+    /(^|\n)\\(title|tempo|track|staff|instrument|ts|articulation|multiBarRest)\b/i;
   if (directives.test(trimmed) || /\n/.test(trimmed)) {
     return { type: "alphaTex", value: trimmed };
   }
@@ -134,7 +149,7 @@ const AlphaTabSimplePlayer: React.FC<AlphaTabSimplePlayerProps> = ({
     if (texMode) {
       opts.core = { tex: true };
     }
-  const api = new window.alphaTab.AlphaTabApi(hostRef.current, opts);
+    const api = new window.alphaTab.AlphaTabApi(hostRef.current, opts);
     apiRef.current = api;
     onApi?.(api);
     return api;
@@ -199,7 +214,7 @@ const AlphaTabSimplePlayer: React.FC<AlphaTabSimplePlayerProps> = ({
             break;
         }
       }
-      } catch (e) {
+    } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
       setStatus("error");
       return;
@@ -243,7 +258,7 @@ const AlphaTabSimplePlayer: React.FC<AlphaTabSimplePlayerProps> = ({
       <div
         ref={hostRef}
         data-simple-alphatab
-        className="relative min-h-24 w-full overflow-auto rounded-xl border border-[color:var(--at-border-color,_#ccc)] bg-[color:var(--at-panel-bg,_#fff)] p-4 text-sm font-mono"
+        className="relative min-h-24 w-full overflow-auto rounded-xl border border-[color:var(--at-border-color,_#ccc)] bg-[color:var(--at-panel-bg,_#fff)] p-4 font-mono text-sm"
       />
       {status === "loading-runtime" && (
         <p className="mt-2 text-xs text-[color:var(--at-text-tertiary,_#666)]">
@@ -256,7 +271,7 @@ const AlphaTabSimplePlayer: React.FC<AlphaTabSimplePlayerProps> = ({
         </p>
       )}
       {error && (
-        <p className="mt-2 break-all text-xs text-red-500">加载失败：{error}</p>
+        <p className="mt-2 text-xs break-all text-red-500">加载失败：{error}</p>
       )}
     </div>
   );
