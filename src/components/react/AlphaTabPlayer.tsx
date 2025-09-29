@@ -438,6 +438,9 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
   const [layoutMode, setLayoutMode] = useState<"page" | "horizontal">("page");
   const [isTrackDialogOpen, setIsTrackDialogOpen] = useState(false);
   const lastFocusedRef = useRef<HTMLElement | null>(null);
+  // 当运行时缺少 loadAlphaTex 时，保存待解析 alphaTex，并通过重建 API (tex 模式) 解析
+  const pendingAlphaTexRef = useRef<string | null>(null);
+  const [reinitKey, setReinitKey] = useState(0);
 
   const formatDuration = useCallback((milliseconds: number) => {
     if (!Number.isFinite(milliseconds)) return "00:00";
@@ -496,13 +499,15 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
           case "arrayBuffer":
             api.load(descriptor.value);
             break;
-          case "alphaTex":
+          case "alphaTex": {
             if (typeof api.loadAlphaTex === "function") {
               api.loadAlphaTex(descriptor.value);
             } else {
-              api.load(descriptor.value);
+              // 回退：记录文本并触发一次 tex 模式重建
+              pendingAlphaTexRef.current = descriptor.value;
+              setReinitKey(k => k + 1);
             }
-            break;
+            break; }
           default:
             break;
         }
@@ -543,6 +548,13 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
         const alphaTab = window.alphaTab;
         playerStateEnumRef.current = alphaTab.synth?.PlayerState ?? null;
         layoutModeEnumRef.current = alphaTab.LayoutMode ?? null;
+        const texFallback = pendingAlphaTexRef.current;
+        if (texFallback) {
+          // 将待解析 alphaTex 文本写入容器，使用 tex 模式配置
+          mainRef.current.textContent = texFallback;
+        } else {
+          mainRef.current.textContent = "";
+        }
 
         const api = new alphaTab.AlphaTabApi(mainRef.current, {
           player: {
@@ -554,6 +566,9 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
             layoutMode: alphaTab.LayoutMode?.Page,
             stretchForce: 0.9,
           },
+          ...(texFallback
+            ? { core: { tex: true } }
+            : {}),
         }) as AlphaTabApiInstance;
 
         apiRef.current = api;
@@ -630,9 +645,15 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
           })
         );
 
-        void loadSource(source, api).catch(err => {
-          setError(err instanceof Error ? err.message : String(err));
-        });
+        if (texFallback) {
+            // 已由 core.tex 自动解析，清除标记
+            pendingAlphaTexRef.current = null;
+            setIsLoading(false); // 等待事件也可；这里保持与 renderStarted 逻辑一致
+        } else {
+          void loadSource(source, api).catch(err => {
+            setError(err instanceof Error ? err.message : String(err));
+          });
+        }
 
         return () => {
           detachments.forEach(detach => detach());
@@ -651,7 +672,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
       apiRef.current = null;
       scoreRef.current = null;
     };
-  }, [loadSource, registerEvent, soundFontUrl]);
+  }, [loadSource, registerEvent, soundFontUrl, reinitKey]);
 
   useEffect(() => {
     if (!apiRef.current) return;
