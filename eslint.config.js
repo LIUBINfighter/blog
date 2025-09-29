@@ -1,6 +1,7 @@
 import eslintPluginAstro from "eslint-plugin-astro";
 import globals from "globals";
 import tseslint from "typescript-eslint";
+import prettierConfig from "eslint-config-prettier";
 
 export default [
   ...tseslint.configs.recommended,
@@ -15,4 +16,6 @@ export default [
   },
   { rules: { "no-console": "error" } },
   { ignores: ["dist/**", ".astro", "public/pagefind/**"] },
+  // MUST be last: disable stylistic rules conflicting with Prettier
+  prettierConfig,
 ];
