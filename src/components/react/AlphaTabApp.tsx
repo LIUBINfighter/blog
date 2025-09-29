@@ -2,6 +2,8 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { FileMusic, Moon, Sun, UploadCloud } from "lucide-react";
 import AlphaTabPlayer from "./AlphaTabPlayer";
 import type { AlphaTabSource } from "./AlphaTabPlayer";
+// 引入极简版本以便对比/调试 alphaTex 直接加载
+import AlphaTabSimplePlayer, { type SimpleAlphaTabSource } from "./AlphaTabSimplePlayer";
 
 declare global {
   interface Window {
@@ -45,6 +47,8 @@ interface AlphaTabAppProps {
   className?: string;
   /** 强制把字符串 / URL 当作 AlphaTex 文本（会先 fetch 再 loadAlphaTex） */
   forceAlphaTex?: boolean;
+  /** 使用简化播放器（关闭高级功能，仅演示 alphaTex 兼容） */
+  useSimplePlayer?: boolean;
 }
 
 const detectStringSource = (raw: string): AlphaTabSource => {
@@ -90,6 +94,7 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
   soundFontUrl,
   className,
   forceAlphaTex = false,
+  useSimplePlayer = false,
 }) => {
   const deriveInitialSource = useCallback((): AlphaTabSource => {
     if (initialSource) {
@@ -313,12 +318,19 @@ const AlphaTabApp: React.FC<AlphaTabAppProps> = ({
         </div>
       </header>
 
-      <AlphaTabPlayer
-        source={source}
-        isDarkMode={isDarkMode}
-        soundFontUrl={soundFontUrl}
-        forceAlphaTex={forceAlphaTex}
-      />
+      {useSimplePlayer ? (
+        <AlphaTabSimplePlayer
+          source={source as SimpleAlphaTabSource}
+          className="border border-[color:var(--at-border-color)]"
+        />
+      ) : (
+        <AlphaTabPlayer
+          source={source}
+            isDarkMode={isDarkMode}
+            soundFontUrl={soundFontUrl}
+            forceAlphaTex={forceAlphaTex}
+        />
+      )}
     </div>
   );
 };
