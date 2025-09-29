@@ -1,0 +1,60 @@
+# AlphaTab 内联来源用法
+
+本组件现在支持多形式在 MDX/页面中直接传入初始乐谱来源 (`initialSource`)：
+
+| 形式 | 说明 | 例子 |
+| ---- | ---- | ---- |
+| AlphaTabSource 对象 | 原有方式，显式指定 `type` / `value` | `{ type: 'url', value: 'https://...' }` |
+| 直接 URL 字符串 | 以 `http://` 或 `https://` 开头自动识别为远程文件 | `"https://www.alphatab.net/files/canon.gp"` |
+| AlphaTex 多行字符串 | 含有换行且出现 `title|tempo|track|instrument|bar` 等关键字视作 alphaTex | ```` ```alphaTex\ntitle "Demo"\ntrack "Guitar"\n"```` |
+| 以 `AT:` 前缀的行 | 简写方式，`AT:` 之后整体作为 alphaTex 源 | `"AT: title \"Demo\" tempo 120"` |
+
+## 传参示例（MDX）
+
+```tsx
+import AlphaTabApp from '@/components/react/AlphaTabApp';
+
+// 1) 直接 URL
+<AlphaTabApp initialSource="https://www.alphatab.net/files/canon.gp" />
+
+// 2) AlphaTex 内联（多行）
+<AlphaTabApp
+  initialSource={`title "My Song"\ntrack "Guitar"\nbar 1 4/4\n`}
+/>
+
+// 3) 简写 AlphaTex
+<AlphaTabApp initialSource={"AT: title \"Short\" tempo 100"} />
+
+// 4) 原始对象形式
+<AlphaTabApp initialSource={{ type: 'url', value: 'https://www.alphatab.net/files/canon.gp', label: 'Canon' }} />
+```
+
+## 识别规则说明
+
+1. `string` 且满足 `^https?://` → `type = url`
+2. `string` 以 `AT:` 开头 → 去掉前缀后 `type = alphaTex`
+3. `string` 含 `\n` 且正则命中 `(title|tempo|track|instrument|bar)` → `type = alphaTex`
+4. 其他字符串 → 回退当作 URL（失败时由网络层 404）
+
+## Label 行为
+
+- 对象形式可提供 `label`，用于顶部显示。
+- 纯字符串来源默认显示 `Inline Source`，可在父层包一层状态自行改写。
+
+## 常见问题
+
+### Q: 想在页面用户点击后再加载远程文件？
+提供 `allowUpload={false}` 并自行在外层管理 state，把所选链接转换成支持的字符串重新渲染组件即可。
+
+### Q: AlphaTex 内容较长如何保持代码可读？
+建议使用模板字符串，并放在独立常量：
+```ts
+const alphaTex = `title "Long Piece"\ntrack "Guitar"\nbar 1 4/4\n...`;
+<AlphaTabApp initialSource={alphaTex} />
+```
+
+### Q: 是否支持原生二进制 ArrayBuffer? 
+是的，仍然可以用对象形式：`{ type: 'arrayBuffer', value: buf }`。
+
+---
+若需更复杂的智能识别策略（例如 MIME HEAD 请求或扩展后缀判断），可以后续在 `detectStringSource` 中扩展。

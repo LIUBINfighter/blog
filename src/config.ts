@@ -1,5 +1,5 @@
 export const SITE = {
-  website: "https://liubinfighter.github.io/blog/", // 你的部署域名
+  website: "https://blog.jay-bridge.dev/", // 你的部署域名
   author: "Jay Bridge", // 你的名字
   profile: "https://github.com/LIUBINfighter", // 你的个人资料链接
   desc: "Jay Bridge's Blog", // 站点描述

@@ -395,6 +395,11 @@ type AlphaTabPlayerProps = {
   isDarkMode: boolean;
   className?: string;
   soundFontUrl?: string;
+  /**
+   * 如果为 true 且 source.type === 'url'，则不直接传给 api.load，
+   * 而是先 fetch 文本并尝试使用 loadAlphaTex 解析（失败再回退）。
+   */
+  forceAlphaTex?: boolean;
 };
 
 const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
@@ -402,6 +407,7 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
   isDarkMode,
   className,
   soundFontUrl,
+  forceAlphaTex = false,
 }) => {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const viewportRef = useRef<HTMLDivElement | null>(null);
@@ -460,28 +466,52 @@ const AlphaTabPlayer: React.FC<AlphaTabPlayerProps> = ({
       setIsLoading(true);
       setSoundFontProgress(0);
 
-      switch (descriptor.type) {
-        case "url":
-          api.load(descriptor.value);
-          break;
-        case "file":
-          api.load(await descriptor.value.arrayBuffer());
-          break;
-        case "arrayBuffer":
-          api.load(descriptor.value);
-          break;
-        case "alphaTex":
-          if (typeof api.loadAlphaTex === "function") {
-            api.loadAlphaTex(descriptor.value);
-          } else {
-            api.load(descriptor.value);
+      try {
+        switch (descriptor.type) {
+          case "url": {
+            if (forceAlphaTex) {
+              try {
+                const res = await fetch(descriptor.value);
+                if (!res.ok) throw new Error(`fetch 失败: ${res.status}`);
+                const text = await res.text();
+                if (typeof api.loadAlphaTex === "function") {
+                  api.loadAlphaTex(text);
+                } else {
+                  api.load(text);
+                }
+                break;
+              } catch {
+                // fetch alphaTex 失败，回退普通 URL 加载
+                api.load(descriptor.value);
+                break;
+              }
+            } else {
+              api.load(descriptor.value);
+            }
+            break;
           }
-          break;
-        default:
-          break;
+          case "file":
+            api.load(await descriptor.value.arrayBuffer());
+            break;
+          case "arrayBuffer":
+            api.load(descriptor.value);
+            break;
+          case "alphaTex":
+            if (typeof api.loadAlphaTex === "function") {
+              api.loadAlphaTex(descriptor.value);
+            } else {
+              api.load(descriptor.value);
+            }
+            break;
+          default:
+            break;
+        }
+      } catch (e) {
+        setError(e instanceof Error ? e.message : String(e));
+        setIsLoading(false);
       }
     },
-    []
+    [forceAlphaTex]
   );
 
   useEffect(() => {
