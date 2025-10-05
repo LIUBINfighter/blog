@@ -28,6 +28,7 @@ src/data/blog/
 ```
 
 支持的文件格式：
+
 - `.md` - 标准 Markdown 文件
 - `.mdx` - 支持 React 组件的 MDX 文件（推荐）
 
@@ -41,7 +42,6 @@ title: "文章标题"
 description: "文章描述，会显示在卡片和 SEO 中"
 pubDatetime: 2025-10-06T10:00:00+08:00
 ---
-
 ## 你的正文内容
 
 在这里开始写作...
@@ -61,51 +61,51 @@ description: "文章简短描述（建议 50-160 字符）"
 pubDatetime: 2025-10-06T10:00:00+08:00
 
 # ===== URL 和标识 =====
-slug: "custom-url-slug"              # 自定义 URL，不填则根据文件名生成
-author: "Jay Bridge"                  # 作者名，默认来自配置文件
+slug: "custom-url-slug" # 自定义 URL，不填则根据文件名生成
+author: "Jay Bridge" # 作者名，默认来自配置文件
 
 # ===== 时间管理 =====
-modDatetime: 2025-10-07T15:30:00+08:00  # 最后修改时间（可选）
-timezone: "Asia/Shanghai"             # 时区，默认为上海
+modDatetime: 2025-10-07T15:30:00+08:00 # 最后修改时间（可选）
+timezone: "Asia/Shanghai" # 时区，默认为上海
 
 # ===== 发布控制 =====
-draft: false                          # true = 草稿，不会发布
-featured: true                        # true = 在首页突出显示
+draft: false # true = 草稿，不会发布
+featured: true # true = 在首页突出显示
 
 # ===== 分类和标签 =====
-tags:                                 # 标签数组
+tags: # 标签数组
   - tutorial
   - tech
   - life
 
 # ===== 图片和链接 =====
-cover: "@/assets/images/2025/cover.jpg"           # 封面图片
-ogImage: "@/assets/images/2025/og-image.jpg"      # Open Graph 图片
-canonicalURL: "https://example.com/original"       # 原始链接（转载时使用）
+cover: "@/assets/images/2025/cover.jpg" # 封面图片
+ogImage: "@/assets/images/2025/og-image.jpg" # Open Graph 图片
+canonicalURL: "https://example.com/original" # 原始链接（转载时使用）
 
 # ===== 其他 =====
-hideEditPost: false                   # 隐藏"编辑页面"按钮
+hideEditPost: false # 隐藏"编辑页面"按钮
 ---
 ```
 
 ### 字段说明
 
-| 字段 | 必需 | 说明 |
-|------|------|------|
-| `title` | ✅ | 文章标题，显示在页面顶部 |
-| `description` | ✅ | 文章摘要，用于 SEO 和卡片预览 |
-| `pubDatetime` | ✅ | 发布时间，格式为 ISO 8601 |
-| `slug` | ❌ | 自定义 URL，默认使用文件名 |
-| `author` | ❌ | 作者，默认为 "Jay Bridge" |
-| `modDatetime` | ❌ | 修改时间，会在文章顶部显示 |
-| `draft` | ❌ | 草稿状态，`true` 则不会发布 |
-| `featured` | ❌ | 特色文章，会在首页突出显示 |
-| `tags` | ❌ | 标签数组，默认为 `["others"]` |
-| `cover` | ❌ | 封面图片路径 |
-| `ogImage` | ❌ | 社交分享图片 |
-| `canonicalURL` | ❌ | 规范链接，用于 SEO |
-| `hideEditPost` | ❌ | 隐藏编辑按钮 |
-| `timezone` | ❌ | 时区设置 |
+| 字段           | 必需 | 说明                          |
+| -------------- | ---- | ----------------------------- |
+| `title`        | ✅   | 文章标题，显示在页面顶部      |
+| `description`  | ✅   | 文章摘要，用于 SEO 和卡片预览 |
+| `pubDatetime`  | ✅   | 发布时间，格式为 ISO 8601     |
+| `slug`         | ❌   | 自定义 URL，默认使用文件名    |
+| `author`       | ❌   | 作者，默认为 "Jay Bridge"     |
+| `modDatetime`  | ❌   | 修改时间，会在文章顶部显示    |
+| `draft`        | ❌   | 草稿状态，`true` 则不会发布   |
+| `featured`     | ❌   | 特色文章，会在首页突出显示    |
+| `tags`         | ❌   | 标签数组，默认为 `["others"]` |
+| `cover`        | ❌   | 封面图片路径                  |
+| `ogImage`      | ❌   | 社交分享图片                  |
+| `canonicalURL` | ❌   | 规范链接，用于 SEO            |
+| `hideEditPost` | ❌   | 隐藏编辑按钮                  |
+| `timezone`     | ❌   | 时区设置                      |
 
 ## ✍️ 正文撰写
 
@@ -114,7 +114,7 @@ hideEditPost: false                   # 隐藏"编辑页面"按钮
 ```markdown
 ## 这是二级标题
 
-这是段落文本，支持 **粗体**、*斜体*、~~删除线~~、`行内代码`。
+这是段落文本，支持 **粗体**、_斜体_、~~删除线~~、`行内代码`。
 
 ### 这是三级标题
 
@@ -149,6 +149,7 @@ def calculate_sum(a, b):
 ````
 
 支持的代码高亮特性：
+
 - 语法高亮（浅色主题：min-light，深色主题：night-owl）
 - 行高亮
 - Diff 标记
@@ -173,11 +174,13 @@ function example() {
 本博客支持 KaTeX 数学公式：
 
 **行内公式**：
+
 ```markdown
 这是一个行内公式 $E = mc^2$。
 ```
 
 **块级公式**：
+
 ```markdown
 $$
 \frac{n!}{k!(n-k)!} = \binom{n}{k}
@@ -246,12 +249,14 @@ public/
 如果需要导入原始数据文件（如 JSON、文本等），可以使用 MDX 的导入功能：
 
 **文件结构：**
+
 ```
 src/data/scores/
   └── demo-piece.alphatex
 ```
 
 **在 MDX 中使用：**
+
 ```mdx
 ---
 title: "文章标题"
@@ -286,10 +291,7 @@ import Chart from "@/components/react/Chart";
 
 <MyButton client:only="react" text="点击我" />
 
-<Chart 
-  client:only="react" 
-  data={[1, 2, 3, 4, 5]} 
-/>
+<Chart client:only="react" data={[1, 2, 3, 4, 5]} />
 
 > **重要**：使用 `client:only="react"` 确保组件只在客户端渲染
 ```
@@ -322,7 +324,7 @@ pnpm dev
 ```yaml
 ---
 title: "未完成的文章"
-draft: true  # 不会在生产构建中出现
+draft: true # 不会在生产构建中出现
 ---
 ```
 
@@ -337,6 +339,7 @@ pnpm preview
 ```
 
 构建过程会：
+
 - 运行 Astro 类型检查
 - 生成静态 HTML
 - 创建 Pagefind 搜索索引
@@ -369,6 +372,7 @@ pnpm preview
 ### 标签使用
 
 常用标签示例：
+
 - 技术：`tech`, `tutorial`, `coding`
 - 生活：`life`, `essay`, `thoughts`
 - 学术：`research`, `SUSTecher`, `Course`
@@ -412,6 +416,7 @@ pubDatetime: 2025-10-06T14:30:00+08:00
 ### Q: 时间显示不对？
 
 确保：
+
 1. 使用正确的时区（如 `+08:00`）
 2. 日期格式为 ISO 8601
 3. 检查 `timezone` 字段设置
@@ -431,6 +436,7 @@ console.log("Hello");
 现在你已经掌握了所有必要的知识，开始创作你的第一篇文章吧！
 
 记住：
+
 - ✅ 从最简模板开始
 - ✅ 逐步添加需要的功能
 - ✅ 参考现有文章
