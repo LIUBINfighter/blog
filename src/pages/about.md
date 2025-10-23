@@ -15,7 +15,7 @@ Building creative tools like [Tab Flow for Obsidian](https://github.com/LIUBINfi
 
 Jay Bridge is an undergraduate in SUSTech, driven by a desire to live a free and peaceful life. After a time spent in the world of robotics and physics competitions, he decided to make something cool and useful in his workspace and fell in love with the design and philosophy of Obsidian.
 
-Like many young people, Jay used to be concerned about freedom, wealth, and the future. His INFP-T personality brings both deep insights and a fair share of anxiety.
+Like many young people, Jay used to be concerned about freedom, wealth, and the future. His personality brings both deep insights and a fair share of anxiety.
 
 如果财富自由后我还会做同样的事（弹吉他，写代码，读书和思考），为什么不现在开始做呢？
 
