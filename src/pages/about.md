@@ -5,7 +5,7 @@ title: "About"
 
 Hi! I'm an indie developer based in Shenzhen, China.
 
-Stoic Digital Craftsman (Guitarist / Developer / Designer)
+Digital Craftsman (Guitarist / Developer / Designer)
 
 Building creative tools like [Tab Flow for Obsidian](https://github.com/LIUBINfighter/Obsidian-Tab-Flow). Exploring AI, music, and the art of productive leisure (Otium).
 
